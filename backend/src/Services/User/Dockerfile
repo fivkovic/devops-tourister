@@ -1,39 +1,29 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0-preview AS builder
+#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-# Setup working directory for the project
-WORKDIR /
-COPY ./src/Shared/Shared.csproj ./Shared/
-COPY ./src/Services/User/src/User/User.csproj ./Services/User/src/User/
-COPY ./src/Services/User/src/User.API/User.API.csproj ./Services/User/src/User.API/
-
-# Restore nuget packages
-RUN dotnet restore ./Services/User/src/User.API/User.API.csproj
-
-# Copy project files
-COPY ./src/Shared ./Shared/
-COPY ./src/Services/User/src/User/  ./Services/User/src/User/
-COPY ./src/Services/User/src/User.API/  ./Services/User/src/User.API/
-
-# Build project with Release configuration and no restore (already done restore)
-
-RUN ls
-RUN dotnet build  -c Release --no-restore ./Services/User/src/User.API/User.API.csproj
-
-WORKDIR /Services/User/src/User.API
-
-# Publish project to output folder and no build (already done build)
-RUN dotnet publish -c Release --no-build -o out
-
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-preview
-
-# Setup working directory for the project
-WORKDIR /
-COPY --from=builder /Services/User/src/User.API/out  .
-
-ENV ASPNETCORE_URLS=http://+:80
-ENV ASPNETCORE_HTTP_PORT=80
-ENV ASPNETCORE_ENVIRONMENT=docker
-
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-preview AS base
+USER app
+WORKDIR /app
 EXPOSE 80
 
+FROM mcr.microsoft.com/dotnet/sdk:8.0-preview AS build
+ARG BUILD_CONFIGURATION=Release
+ENV ASPNETCORE_URLS=http://+:80
+ENV ASPNETCORE_ENVIRONMENT=Docker
+WORKDIR /src
+COPY ["src/Shared/Shared.csproj", "Shared/"]
+COPY ["src/Services/User/src/User/User.csproj", "Services/User/src/User/"]
+COPY ["src/Services/User/src/User.API/User.API.csproj", "Services/User/src/User.API/"]
+RUN dotnet restore "Services/User/src/User.API/User.API.csproj"
+COPY ["src/Shared", "Shared/"]
+COPY ["src/Services/User/src/User/", "Services/User/src/User/"]
+COPY ["src/Services/User/src/User.API/", "Services/User/src/User.API/"]
+WORKDIR "/src/Services/User/src/User.API"
+RUN dotnet build "User.API.csproj" -c $BUILD_CONFIGURATION --no-restore
+
+FROM build AS publish
+RUN dotnet publish "User.API.csproj" -c $BUILD_CONFIGURATION --no-build -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "User.API.dll"]

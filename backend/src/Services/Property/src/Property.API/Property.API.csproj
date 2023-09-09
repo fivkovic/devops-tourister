@@ -4,10 +4,21 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>ce3ea8b5-fbba-4596-924d-f0a09dfd7e40</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <!-- NOTE: DockerfileContext is set to the backend/ directory as all commands in the Dockerfile are specified relative to that directory. -->
+    <DockerfileContext>..\..\..</DockerfileContext>
+    <DockerfileFile>..\..\Dockerfile</DockerfileFile>
+	<DockerfileBuildArguments>--no-cache</DockerfileBuildArguments>
+	<DockerfileTag>fivkovic/tourister/property:dev-vs-debug</DockerfileTag>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Property.csproj" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Property\Property.csproj" />
   </ItemGroup>
 
 </Project>

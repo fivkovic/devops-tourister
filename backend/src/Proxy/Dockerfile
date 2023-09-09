@@ -1,37 +1,29 @@
-FROM mcr.microsoft.com/dotnet/sdk:8.0-preview AS builder
+#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-# Setup working directory for the project
-WORKDIR /src
-COPY ./src/Shared/Shared.csproj ./Shared/
-COPY ./src/Proxy/src/Proxy.csproj ./Proxy/src/
-
-# Restore nuget packages
-RUN dotnet restore ./Proxy/src/Proxy.csproj
-
-# Copy project files
-COPY ./src/Shared ./Shared/
-COPY ./src/Proxy/src  ./Proxy/src/
-
-# Build project with Release configuration and no restore (already done restore)
-
-RUN ls
-RUN dotnet build  -c Release --no-restore ./Proxy/src/Proxy.csproj
-
-WORKDIR /src/Proxy/src
-
-# Publish project to output folder and no build (already done build)
-RUN dotnet publish -c Release --no-build -o out
-
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-preview
-
-# Setup working directory for the project
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-preview AS base
+USER app
 WORKDIR /app
-COPY --from=builder /src/Proxy/src/out  .
-
-ENV ASPNETCORE_URLS=http://+:80
-ENV ASPNETCORE_HTTP_PORT=80
-ENV ASPNETCORE_ENVIRONMENT=docker
-
 EXPOSE 80
 
-ENTRYPOINT ["dotnet", "Proxy.dll"]
+FROM mcr.microsoft.com/dotnet/sdk:8.0-preview AS build
+ARG BUILD_CONFIGURATION=Release
+ENV ASPNETCORE_URLS=http://+:80
+ENV ASPNETCORE_ENVIRONMENT=Docker
+WORKDIR /src
+COPY ["src/Shared/Shared.csproj", "Shared/"]
+COPY ["src/Services/Proxy/src/Proxy/Proxy.csproj", "Services/Proxy/src/Proxy/"]
+COPY ["src/Services/Proxy/src/Proxy.API/Proxy.API.csproj", "Services/Proxy/src/Proxy.API/"]
+RUN dotnet restore "Services/Proxy/src/Proxy.API/Proxy.API.csproj"
+COPY ["src/Shared", "Shared/"]
+COPY ["src/Services/Proxy/src/Proxy/", "Services/Proxy/src/Proxy/"]
+COPY ["src/Services/Proxy/src/Proxy.API/", "Services/Proxy/src/Proxy.API/"]
+WORKDIR "/src/Services/Proxy/src/Proxy.API"
+RUN dotnet build "Proxy.API.csproj" -c $BUILD_CONFIGURATION --no-restore
+
+FROM build AS publish
+RUN dotnet publish "Proxy.API.csproj" -c $BUILD_CONFIGURATION --no-build -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "Proxy.API.dll"]
