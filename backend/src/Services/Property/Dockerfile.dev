@@ -13,15 +13,19 @@ WORKDIR /src
 COPY ["src/Shared/Shared.csproj", "Shared/"]
 COPY ["src/Services/Property/src/Property/Property.csproj", "Services/Property/src/Property/"]
 COPY ["src/Services/Property/src/Property.API/Property.API.csproj", "Services/Property/src/Property.API/"]
-RUN dotnet restore "Services/Property/src/Property.API/Property.API.csproj"
+RUN --mount=type=cache,id=property_nuget,target=/root/.nuget/packages \
+	dotnet restore "Services/Property/src/Property.API/Property.API.csproj"
 COPY ["src/Shared", "Shared/"]
 COPY ["src/Services/Property/src/Property/", "Services/Property/src/Property/"]
 COPY ["src/Services/Property/src/Property.API/", "Services/Property/src/Property.API/"]
 WORKDIR "/src/Services/Property/src/Property.API"
-RUN dotnet build "Property.API.csproj" -c $BUILD_CONFIGURATION --no-restore
+RUN --mount=type=cache,id=property_nuget,target=/root/.nuget/packages \
+	dotnet build "Property.API.csproj" -c $BUILD_CONFIGURATION --no-restore
 
 FROM build AS publish
-RUN dotnet publish "Property.API.csproj" -c $BUILD_CONFIGURATION --no-build -o /app/publish /p:UseAppHost=false
+RUN --mount=type=cache,id=property_nuget,target=/root/.nuget/packages \
+	dotnet publish "Property.API.csproj" -c $BUILD_CONFIGURATION --no-build -o /app/publish /p:UseAppHost=false
+RUN rm -rf /root/.nuget /root/.local /root/.nuget/packages/*
 
 FROM base AS final
 WORKDIR /app

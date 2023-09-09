@@ -13,15 +13,19 @@ WORKDIR /src
 COPY ["src/Shared/Shared.csproj", "Shared/"]
 COPY ["src/Services/Reservation/src/Reservation/Reservation.csproj", "Services/Reservation/src/Reservation/"]
 COPY ["src/Services/Reservation/src/Reservation.API/Reservation.API.csproj", "Services/Reservation/src/Reservation.API/"]
-RUN dotnet restore "Services/Reservation/src/Reservation.API/Reservation.API.csproj"
+RUN --mount=type=cache,id=reservation_nuget,target=/root/.nuget/packages \
+	dotnet restore "Services/Reservation/src/Reservation.API/Reservation.API.csproj"
 COPY ["src/Shared", "Shared/"]
 COPY ["src/Services/Reservation/src/Reservation/", "Services/Reservation/src/Reservation/"]
 COPY ["src/Services/Reservation/src/Reservation.API/", "Services/Reservation/src/Reservation.API/"]
 WORKDIR "/src/Services/Reservation/src/Reservation.API"
-RUN dotnet build "Reservation.API.csproj" -c $BUILD_CONFIGURATION --no-restore
+RUN --mount=type=cache,id=reservation_nuget,target=/root/.nuget/packages \
+	dotnet build "Reservation.API.csproj" -c $BUILD_CONFIGURATION --no-restore
 
 FROM build AS publish
-RUN dotnet publish "Reservation.API.csproj" -c $BUILD_CONFIGURATION --no-build -o /app/publish /p:UseAppHost=false
+RUN --mount=type=cache,id=reservation_nuget,target=/root/.nuget/packages \
+	dotnet publish "Reservation.API.csproj" -c $BUILD_CONFIGURATION --no-build -o /app/publish /p:UseAppHost=false
+RUN rm -rf /root/.nuget /root/.local /root/.nuget/packages/*
 
 FROM base AS final
 WORKDIR /app
