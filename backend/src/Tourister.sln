@@ -8,6 +8,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{1046401E-2EE5-4544-BFD2-2C2D15DF1102}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Proxy", "Proxy", "{FEBE21BA-C39C-437E-B868-76BF54F38657}"
+	ProjectSection(SolutionItems) = preProject
+		Proxy\Dockerfile = Proxy\Dockerfile
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Proxy", "Proxy\src\Proxy.csproj", "{72AF9AA1-E066-4B1E-B6B6-7FB7E1EDAD8C}"
 EndProject
@@ -16,12 +19,24 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{BB585D5E-4EEB-4E59-8F84-EA2C07E1252E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Identity", "Identity", "{026D306E-F6C0-427F-91A7-B51B457A23F6}"
+	ProjectSection(SolutionItems) = preProject
+		Services\Identity\Dockerfile = Services\Identity\Dockerfile
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Property", "Property", "{1BECBF2C-E7F4-47FE-B7D9-5ABA8F4B5638}"
+	ProjectSection(SolutionItems) = preProject
+		Services\Property\Dockerfile = Services\Property\Dockerfile
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Reservation", "Reservation", "{1488EE88-A0E3-4E83-9E1F-D16DE63E8984}"
+	ProjectSection(SolutionItems) = preProject
+		Services\Reservation\Dockerfile = Services\Reservation\Dockerfile
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "User", "User", "{BC4E772C-7920-40F2-A67C-6CEB79DCEC57}"
+	ProjectSection(SolutionItems) = preProject
+		Services\User\Dockerfile = Services\User\Dockerfile
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Search", "Search", "{E9CD1012-91E2-48E5-B7EC-D754CEDCFA6C}"
 EndProject
@@ -45,21 +60,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E8A3A968
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3C16D608-C196-474C-8A3E-352E49D0FF2B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity", "Services\Identity\src\Identity\Identity.csproj", "{4E1C7DFF-B0E1-414B-8E2A-2189338A338D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity", "Services\Identity\src\Identity\Identity.csproj", "{4E1C7DFF-B0E1-414B-8E2A-2189338A338D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.API", "Services\Identity\src\Identity.API\Identity.API.csproj", "{8B732945-2FDF-49D4-9692-B1E767D18A50}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.API", "Services\Identity\src\Identity.API\Identity.API.csproj", "{8B732945-2FDF-49D4-9692-B1E767D18A50}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Property", "Services\Property\src\Property\Property.csproj", "{73963FAA-3906-4273-BE55-97B2DE78A22E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Property", "Services\Property\src\Property\Property.csproj", "{73963FAA-3906-4273-BE55-97B2DE78A22E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Property.API", "Services\Property\src\Property.API\Property.API.csproj", "{323A2C52-2CE7-4922-B8ED-AC8472D83E60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Property.API", "Services\Property\src\Property.API\Property.API.csproj", "{323A2C52-2CE7-4922-B8ED-AC8472D83E60}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reservation", "Services\Reservation\src\Reservation\Reservation.csproj", "{DADD51FB-9ECD-46C4-A8E4-2A81D7A3E819}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reservation", "Services\Reservation\src\Reservation\Reservation.csproj", "{DADD51FB-9ECD-46C4-A8E4-2A81D7A3E819}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reservation.API", "Services\Reservation\src\Reservation.API\Reservation.API.csproj", "{4A190F08-92B7-4B40-9318-8EB5CD21FD39}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reservation.API", "Services\Reservation\src\Reservation.API\Reservation.API.csproj", "{4A190F08-92B7-4B40-9318-8EB5CD21FD39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "User", "Services\User\src\User\User.csproj", "{CCCBFB1F-99CC-4E74-88CF-17D2D8B5EB9E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "User", "Services\User\src\User\User.csproj", "{CCCBFB1F-99CC-4E74-88CF-17D2D8B5EB9E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "User.API", "Services\User\src\User.API\User.API.csproj", "{45C8708D-7A41-43C3-AACA-589C592B463B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "User.API", "Services\User\src\User.API\User.API.csproj", "{45C8708D-7A41-43C3-AACA-589C592B463B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
