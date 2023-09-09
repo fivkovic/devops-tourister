@@ -1,0 +1,114 @@
+version: "3.8"
+name: "tourister"
+
+services:
+
+    postgres:
+        image: postgres:15.4-alpine
+        container_name: postgres
+        restart: unless-stopped
+        environment:
+          - POSTGRES_USER=postgres
+          - POSTGRES_PASSWORD=postgres
+        command:
+          - "postgres"
+          - "-c"
+          - "wal_level=logical"
+          - "-c"
+          - "max_prepared_transactions=10"
+        ports:
+          - 5432:5432
+        networks:
+          - tourister-network
+
+    mongo:
+        image: mongo:5.0.20                 # TODO: Bump to higher version.
+        container_name: mongo
+        restart: unless-stopped
+        ports:
+          - 27017:27017
+        networks:
+          - tourister-network
+
+    rabbitmq:
+        image: rabbitmq:3.12.4-management
+        container_name: rabbitmq
+        restart: unless-stopped
+        ports:
+          - 5672:5672
+          - 15672:15672
+        networks:
+          - tourister-network
+
+    proxy:
+        image: ${DOCKER_REGISTRY-}/proxy
+        build:
+          context: ../../
+          dockerfile: src/Proxy/Dockerfile.dev
+        container_name: proxy
+        environment:
+          - ASPNETCORE_ENVIRONMENT=Docker
+          - ASPNETCORE_URLS=http://+:80
+        ports:
+          - 8000:80
+        networks:
+          - tourister-network
+
+    identity:
+        image: ${DOCKER_REGISTRY-}/identity
+        build:
+          context: ../../
+          dockerfile: src/Services/Identity/Dockerfile.dev
+        container_name: identity
+        environment:
+          - ASPNETCORE_ENVIRONMENT=Docker
+          - ASPNETCORE_URLS=http://+:80
+        ports:
+          - 8001:80
+        networks:
+          - tourister-network
+
+    property:
+        image: ${DOCKER_REGISTRY-}/property
+        build:
+          context: ../../
+          dockerfile: src/Services/Property/Dockerfile.dev
+        container_name: property
+        environment:
+          - ASPNETCORE_ENVIRONMENT=Docker
+          - ASPNETCORE_URLS=http://+:80
+        ports:
+          - 8002:80
+        networks:
+          - tourister-network
+
+    reservation:
+        image: ${DOCKER_REGISTRY-}/reservation
+        build:
+          context: ../../
+          dockerfile: src/Services/Reservation/Dockerfile.dev
+        container_name: reservation
+        environment:
+          - ASPNETCORE_ENVIRONMENT=Docker
+          - ASPNETCORE_URLS=http://+:80
+        ports:
+          - 8003:80
+        networks:
+          - tourister-network
+
+    user:
+        image: ${DOCKER_REGISTRY-}/user
+        build:
+          context: ../../
+          dockerfile: src/Services/User/Dockerfile.dev
+        container_name: user
+        environment:
+          - ASPNETCORE_ENVIRONMENT=Docker
+          - ASPNETCORE_URLS=http://+:80
+        ports:
+          - 8004:80
+        networks:
+          - tourister-network
+
+networks:
+    tourister-network:
