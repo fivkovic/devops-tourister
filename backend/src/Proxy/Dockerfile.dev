@@ -11,23 +11,21 @@ ENV ASPNETCORE_URLS=http://+:80
 ENV ASPNETCORE_ENVIRONMENT=Docker
 WORKDIR /src
 COPY ["src/Shared/Shared.csproj", "Shared/"]
-COPY ["src/Services/Proxy/src/Proxy/Proxy.csproj", "Services/Proxy/src/Proxy/"]
-COPY ["src/Services/Proxy/src/Proxy.API/Proxy.API.csproj", "Services/Proxy/src/Proxy.API/"]
+COPY ["src/Proxy/src/Proxy.csproj", "Proxy/src/"]
 RUN --mount=type=cache,id=proxy_nuget,target=/root/.nuget/packages \
-	dotnet restore "Services/Proxy/src/Proxy.API/Proxy.API.csproj"
+	dotnet restore "Proxy/src/Proxy.csproj"
 COPY ["src/Shared", "Shared/"]
-COPY ["src/Services/Proxy/src/Proxy/", "Services/Proxy/src/Proxy/"]
-COPY ["src/Services/Proxy/src/Proxy.API/", "Services/Proxy/src/Proxy.API/"]
-WORKDIR "/src/Services/Proxy/src/Proxy.API"
+COPY ["src/Proxy/src/", "Proxy/src/"]
+WORKDIR "/src/Proxy/src/"
 RUN --mount=type=cache,id=proxy_nuget,target=/root/.nuget/packages \
-	dotnet build "Proxy.API.csproj" -c $BUILD_CONFIGURATION --no-restore
+	dotnet build "Proxy.csproj" -c $BUILD_CONFIGURATION --no-restore
 
 FROM build AS publish
 RUN --mount=type=cache,id=proxy_nuget,target=/root/.nuget/packages \
-	dotnet publish "Proxy.API.csproj" -c $BUILD_CONFIGURATION --no-build -o /app/publish /p:UseAppHost=false
+	dotnet publish "Proxy.csproj" -c $BUILD_CONFIGURATION --no-build -o /app/publish /p:UseAppHost=false
 RUN rm -rf /root/.nuget /root/.local /root/.nuget/packages/*
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Proxy.API.dll"]
+ENTRYPOINT ["dotnet", "Proxy.dll"]
