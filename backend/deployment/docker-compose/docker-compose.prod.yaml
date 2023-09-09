@@ -1,0 +1,77 @@
+version: "3.8"
+name: "tourister"
+
+services:
+
+    proxy:
+        image: ${DOCKER_REGISTRY-}/proxy
+        build:
+          context: ../../
+          dockerfile: src/Proxy/Dockerfile.prod
+        container_name: proxy
+        environment:
+          - ASPNETCORE_ENVIRONMENT=Docker
+          - ASPNETCORE_URLS=http://+:80
+        ports:
+          - 8000:80
+        networks:
+          - tourister-network
+
+    identity:
+        image: ${DOCKER_REGISTRY-}/identity
+        build:
+          context: ../../
+          dockerfile: src/Services/Identity/Dockerfile.prod
+        container_name: identity
+        environment:
+          - ASPNETCORE_ENVIRONMENT=Docker
+          - ASPNETCORE_URLS=http://+:80
+        ports:
+          - 8001:80
+        networks:
+          - tourister-network
+
+    property:
+        image: ${DOCKER_REGISTRY-}/property
+        build:
+          context: ../../
+          dockerfile: src/Services/Property/Dockerfile.prod
+        container_name: property
+        environment:
+          - ASPNETCORE_ENVIRONMENT=Docker
+          - ASPNETCORE_URLS=http://+:80
+        ports:
+          - 8002:80
+        networks:
+          - tourister-network
+
+    reservation:
+        image: ${DOCKER_REGISTRY-}/reservation
+        build:
+          context: ../../
+          dockerfile: src/Services/Reservation/Dockerfile.prod
+        container_name: reservation
+        environment:
+          - ASPNETCORE_ENVIRONMENT=Docker
+          - ASPNETCORE_URLS=http://+:80
+        ports:
+          - 8003:80
+        networks:
+          - tourister-network
+
+    user:
+        image: ${DOCKER_REGISTRY-}/user
+        build:
+          context: ../../
+          dockerfile: src/Services/User/Dockerfile.prod
+        container_name: user
+        environment:
+          - ASPNETCORE_ENVIRONMENT=Docker
+          - ASPNETCORE_URLS=http://+:80
+        ports:
+          - 8004:80
+        networks:
+          - tourister-network
+
+networks:
+    tourister-network:
