@@ -3,6 +3,43 @@ name: "tourister"
 
 services:
 
+    postgres:
+        image: postgres:15.4-alpine
+        container_name: postgres
+        restart: unless-stopped
+        environment:
+          - POSTGRES_USER=postgres
+          - POSTGRES_PASSWORD=postgres
+        command:
+          - "postgres"
+          - "-c"
+          - "wal_level=logical"
+          - "-c"
+          - "max_prepared_transactions=10"
+        ports:
+          - 5432:5432
+        networks:
+          - tourister-network
+
+    mongo:
+        image: mongo:5.0.20                 # TODO: Bump to higher version.
+        container_name: mongo
+        restart: unless-stopped
+        ports:
+          - 27017:27017
+        networks:
+          - tourister-network
+
+    rabbitmq:
+        image: rabbitmq:3.12.4-management
+        container_name: rabbitmq
+        restart: unless-stopped
+        ports:
+          - 5672:5672
+          - 15672:15672
+        networks:
+          - tourister-network
+
     proxy:
         image: ${DOCKER_REGISTRY-}/proxy
         build:
