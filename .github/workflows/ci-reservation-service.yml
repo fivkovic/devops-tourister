@@ -1,0 +1,94 @@
+name: CI Workflow - Reservation Service
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['main', 'dev']
+    paths:
+      - backend/src/Services/Reservation/**
+      - .github/workflows/ci-reservation-service.yml
+
+  pull_request:
+    branches: ['main', 'dev']
+    paths:
+      - backend/src/Services/Reservation/**
+      - .github/workflows/ci-reservation-service.yml
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.sha }}
+  cancel-in-progress: true
+
+env:
+  RESERVATION_SERVICE_NAME: 'Reservation'
+  RESERVATION_SERVICE_IMAGE_NAME: 'tourister-reservation'
+  PROJECT_PATH: 'backend/src/Services/Reservation/src/Reservation.API'
+  TESTS_PATH: 'backend/src/Services/Reservation/tests/'
+
+jobs:
+  build-test-analyze:
+    name: Build, Test, Run Code Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build using composite action "Build .NET service"
+        uses: ./.github/actions/build
+        if: success()
+        with:
+          service-name: ${{ env.RESERVATION_SERVICE_NAME }}
+          project-path: ${{ env.PROJECT_PATH }}
+          dotnet-version: '8.0.x'
+          dotnet-quality: 'preview'
+
+      - name: Run tests using composite action "Test .NET service"
+        uses: ./.github/actions/test
+        if: success()
+        with:
+          service-name: ${{ env.RESERVATION_SERVICE_NAME }}
+          tests-path: ${{ env.TESTS_PATH }}
+          reports-path: ${{ github.workspace }}/**/*.cobertura.xml
+          reports-output-path: ${{ github.workspace }}/output/test-results
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run SonarCloud code analysis using composite action "Run Code Analysis on .NET service"
+        uses: ./.github/actions/run-code-analysis
+        if: success()
+        with:
+          project-path: ${{ env.PROJECT_PATH }}
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+          sonar-token: ${{ secrets.SONAR_TOKEN_RESERVATION_SERVICE }}
+          sonar-organization-key: ${{ env.SONAR_ORGANIZATION_KEY }}
+          sonar-project-key: ${{ env.SONAR_PROJECT_KEY_RESERVATION_SERVICE }}
+          sonar-project-name: ${{ env.SONAR_PROJECT_NAME_RESERVATION_SERVICE }}
+          is-test-runner: ${{ env.IS_TEST_RUNNER }}
+
+  pre-release:
+    name: Create development release
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/dev' && github.event_name != 'pull_request' && success() }}
+    needs: build-test-analyze
+    steps:
+      - name: Create development release
+        uses: ./.github/actions/pre-release
+        with:
+          image-name: ${{ env.RESERVATION_SERVICE_IMAGE_NAME }}
+          dockerfile-path: 'backend/src/Services/Reservation/Dockerfile.dev'
+          registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          registry-password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    name: Create stable release
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && success() }}
+    needs: build-test-analyze
+    steps:
+      - name: Create Reservation Service Stable Release
+        uses: ./.github/actions/release
+        with:
+          image-name: ${{ env.RESERVATION_SERVICE_IMAGE_NAME }}
+          dockerfile-path: 'backend/src/Services/Reservation/Dockerfile.prod'
+          registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          registry-password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
