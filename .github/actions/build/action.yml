@@ -29,9 +29,15 @@ runs:
       uses: actions/cache@v3
       if: runner.os == 'Linux'
       with:
-        path: ~/share/dotnet
+        path: /usr/share/dotnet
         key: ${{ runner.os }}-dotnet-sdk-${{ inputs.dotnet-version }}
-        restore-keys: ${{ runner.os }}-dotnet-sdk-${{ inputs.dotnet-version }}
+        restore-keys: ${{ runner.os }}-dotnet-sdk-
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ inputs.dotnet-version }}
+        dotnet-quality: ${{ inputs.dotnet-quality }}
 
     - name: Check .NET SDK
       shell: bash
@@ -42,13 +48,6 @@ runs:
         else
           echo ".NET SDK ${{ inputs.dotnet-version }} was not found in the cache. Setting up..."
         fi
-
-    - name: Setup .NET SDK
-      uses: actions/setup-dotnet@v3
-      if: steps.dotnet-restore-cache-step.outputs.cache-hit != 'true'
-      with:
-        dotnet-version: ${{ inputs.dotnet-version }}
-        dotnet-quality: ${{ inputs.dotnet-quality }}
 
     - name: Cache NuGet Packages
       uses: actions/cache@v3

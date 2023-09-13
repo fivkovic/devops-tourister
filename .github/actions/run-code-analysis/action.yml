@@ -34,26 +34,33 @@ runs:
       shell: bash
       run: echo "Running code analysis on path ${{ inputs.project-path }} (is-test-runner=${{ inputs.is-test-runner }})"
 
-    - name: Set up JDK 17
+    - name: Restore JDK from Cache
+      id: jdk-restore-cache-step
+      uses: actions/cache@v3
+      if: runner.os == 'Linux'
+      with:
+        path: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.8-7
+        key: ${{ runner.os }}-sonar-jdk-17.0.8-7
+        restore-keys: ${{ runner.os }}-sonar-jdk-
+
+    - name: Set up JDK 17 for SonarCloud
       uses: actions/setup-java@v3
       with:
-        java-version: 17
+        java-version: 17.0.8
         distribution: 'zulu'
 
     - name: Cache SonarCloud packages
       uses: actions/cache@v3
       with:
-        path: ~\sonar\cache
+        path: /usr/sonar/cache
         key: ${{ runner.os }}-sonar
-        restore-keys: ${{ runner.os }}-sonar
 
     - name: Cache SonarCloud scanner
       id: cache-sonar-scanner
       uses: actions/cache@v3
       with:
-        path: .\.sonar\scanner
+        path: ./.sonar/scanner
         key: ${{ runner.os }}-sonar-scanner
-        restore-keys: ${{ runner.os }}-sonar-scanner
 
     - name: Install SonarCloud scanner
       if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
