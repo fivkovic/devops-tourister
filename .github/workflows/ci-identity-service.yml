@@ -9,6 +9,7 @@ on:
       - .github/workflows/ci-identity-service.yml
 
   pull_request:
+    types: [opened, synchronize, reopened]
     branches: ['main', 'dev']
     paths:
       - backend/src/Services/Identity/**
