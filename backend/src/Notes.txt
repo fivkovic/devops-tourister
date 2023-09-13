@@ -1,0 +1,6 @@
+# NOTE
+# docker build commands should be ran inside the backend folder and specify the path to the dockerfile.
+# docker build -t tourister-identity-test:0.0.1 -f ./src/Services/Identity/Dockerfile .
+
+# Dockerignore is in the root of the docker context
+

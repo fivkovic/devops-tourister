@@ -9,7 +9,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{104640
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Proxy", "Proxy", "{FEBE21BA-C39C-437E-B868-76BF54F38657}"
 	ProjectSection(SolutionItems) = preProject
-		Proxy\Dockerfile = Proxy\Dockerfile
+		Proxy\Dockerfile.dev = Proxy\Dockerfile.dev
+		Proxy\Dockerfile.prod = Proxy\Dockerfile.prod
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Proxy", "Proxy\src\Proxy.csproj", "{72AF9AA1-E066-4B1E-B6B6-7FB7E1EDAD8C}"
@@ -20,22 +21,26 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{BB
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Identity", "Identity", "{026D306E-F6C0-427F-91A7-B51B457A23F6}"
 	ProjectSection(SolutionItems) = preProject
-		Services\Identity\Dockerfile = Services\Identity\Dockerfile
+		Services\Identity\Dockerfile.dev = Services\Identity\Dockerfile.dev
+		Services\Identity\Dockerfile.prod = Services\Identity\Dockerfile.prod
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Property", "Property", "{1BECBF2C-E7F4-47FE-B7D9-5ABA8F4B5638}"
 	ProjectSection(SolutionItems) = preProject
-		Services\Property\Dockerfile = Services\Property\Dockerfile
+		Services\Property\Dockerfile.dev = Services\Property\Dockerfile.dev
+		Services\Property\Dockerfile.prod = Services\Property\Dockerfile.prod
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Reservation", "Reservation", "{1488EE88-A0E3-4E83-9E1F-D16DE63E8984}"
 	ProjectSection(SolutionItems) = preProject
-		Services\Reservation\Dockerfile = Services\Reservation\Dockerfile
+		Services\Reservation\Dockerfile.dev = Services\Reservation\Dockerfile.dev
+		Services\Reservation\Dockerfile.prod = Services\Reservation\Dockerfile.prod
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "User", "User", "{BC4E772C-7920-40F2-A67C-6CEB79DCEC57}"
 	ProjectSection(SolutionItems) = preProject
-		Services\User\Dockerfile = Services\User\Dockerfile
+		Services\User\Dockerfile.dev = Services\User\Dockerfile.dev
+		Services\User\Dockerfile.prod = Services\User\Dockerfile.prod
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Search", "Search", "{E9CD1012-91E2-48E5-B7EC-D754CEDCFA6C}"
@@ -75,6 +80,28 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "User", "Services\User\src\User\User.csproj", "{CCCBFB1F-99CC-4E74-88CF-17D2D8B5EB9E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "User.API", "Services\User\src\User.API\User.API.csproj", "{45C8708D-7A41-43C3-AACA-589C592B463B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FF50952C-FA0D-491F-9333-215CE05C3E47}"
+	ProjectSection(SolutionItems) = preProject
+		Notes.txt = Notes.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Deployment", "Deployment", "{CCF97F6F-BF58-4F11-93D4-9F3B2D7A7212}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker-compose", "docker-compose", "{AD9FC729-5C57-4F9B-8E6C-406E53AC0A48}"
+	ProjectSection(SolutionItems) = preProject
+		..\deployment\docker-compose\.env = ..\deployment\docker-compose\.env
+		..\deployment\docker-compose\docker-compose.dev.yaml = ..\deployment\docker-compose\docker-compose.dev.yaml
+		..\deployment\docker-compose\docker-compose.prod.yaml = ..\deployment\docker-compose\docker-compose.prod.yaml
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTest", "Services\Identity\tests\IntegrationTest\IntegrationTest.csproj", "{5DBB50B1-856A-4F5C-8290-D074DDD59993}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTest", "Services\Property\tests\IntegrationTest\IntegrationTest.csproj", "{C9582F24-1596-4A00-A276-DE93AA3C686C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTest", "Services\Reservation\tests\IntegrationTest\IntegrationTest.csproj", "{86EA2EAA-ABC9-4335-9B8E-0A8AEF5393C9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTest", "Services\User\tests\IntegrationTest\IntegrationTest.csproj", "{A34888AB-6574-4833-BFE2-E003D71A5FC9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -122,6 +149,22 @@ Global
 		{45C8708D-7A41-43C3-AACA-589C592B463B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{45C8708D-7A41-43C3-AACA-589C592B463B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{45C8708D-7A41-43C3-AACA-589C592B463B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DBB50B1-856A-4F5C-8290-D074DDD59993}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DBB50B1-856A-4F5C-8290-D074DDD59993}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DBB50B1-856A-4F5C-8290-D074DDD59993}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DBB50B1-856A-4F5C-8290-D074DDD59993}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9582F24-1596-4A00-A276-DE93AA3C686C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9582F24-1596-4A00-A276-DE93AA3C686C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9582F24-1596-4A00-A276-DE93AA3C686C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9582F24-1596-4A00-A276-DE93AA3C686C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86EA2EAA-ABC9-4335-9B8E-0A8AEF5393C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86EA2EAA-ABC9-4335-9B8E-0A8AEF5393C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86EA2EAA-ABC9-4335-9B8E-0A8AEF5393C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86EA2EAA-ABC9-4335-9B8E-0A8AEF5393C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A34888AB-6574-4833-BFE2-E003D71A5FC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A34888AB-6574-4833-BFE2-E003D71A5FC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A34888AB-6574-4833-BFE2-E003D71A5FC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A34888AB-6574-4833-BFE2-E003D71A5FC9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -153,6 +196,12 @@ Global
 		{4A190F08-92B7-4B40-9318-8EB5CD21FD39} = {E326A697-C921-48BA-BB2C-27A69E233E0E}
 		{CCCBFB1F-99CC-4E74-88CF-17D2D8B5EB9E} = {2796747A-E5D3-4AD8-9F45-DB8BD4BB21F0}
 		{45C8708D-7A41-43C3-AACA-589C592B463B} = {2796747A-E5D3-4AD8-9F45-DB8BD4BB21F0}
+		{CCF97F6F-BF58-4F11-93D4-9F3B2D7A7212} = {FF50952C-FA0D-491F-9333-215CE05C3E47}
+		{AD9FC729-5C57-4F9B-8E6C-406E53AC0A48} = {CCF97F6F-BF58-4F11-93D4-9F3B2D7A7212}
+		{5DBB50B1-856A-4F5C-8290-D074DDD59993} = {8B5FE80A-17E0-4397-843C-25EF785E612C}
+		{C9582F24-1596-4A00-A276-DE93AA3C686C} = {2D71A36B-D10E-44E9-B2C7-FF28D5B60E4F}
+		{86EA2EAA-ABC9-4335-9B8E-0A8AEF5393C9} = {D229A5BE-0D1C-42EF-899F-693729DE1FD8}
+		{A34888AB-6574-4833-BFE2-E003D71A5FC9} = {3C16D608-C196-474C-8A3E-352E49D0FF2B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BD179710-DD41-45E4-8CA5-614898ED45C9}
