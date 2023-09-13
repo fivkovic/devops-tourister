@@ -18,9 +18,11 @@ inputs:
     description: Github Personal Access Token
     required: true
   no-restore:
+    # NOTE: Currently, no-restore flag should always be set to false.
+    #       This is because the current implementation of the 'Restore NuGet packages' step in the 'build' action restores the packages only for the source project (instead for the entire solution)
     description: Disable restoring of NuGet packages for building tests (tests aren't built in the 'build' composite action)
     required: false
-    default: 'true'
+    default: 'false'
 
 runs:
   using: 'composite'

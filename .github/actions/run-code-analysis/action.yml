@@ -39,7 +39,6 @@ runs:
       with:
         java-version: 17
         distribution: 'zulu'
-        cache: 'maven'
 
     - name: Cache SonarCloud packages
       uses: actions/cache@v3

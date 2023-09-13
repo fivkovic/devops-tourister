@@ -1,5 +1,5 @@
 ﻿name: 'Release'
-description: 'Build and publish Docker image (Release)'
+description: 'Bump minor version, create tag and GitHub release, Build and publish Docker image (Release)'
 
 inputs:
   image-name:

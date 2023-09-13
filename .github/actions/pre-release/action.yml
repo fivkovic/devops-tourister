@@ -1,5 +1,5 @@
 name: 'Pre-Release'
-description: 'Build and publish Docker image (Pre-Release)'
+description: 'Bump patch version, create tag and GitHub pre-release, Build and publish Docker image (Pre-Release)'
 
 inputs:
   image-name:
