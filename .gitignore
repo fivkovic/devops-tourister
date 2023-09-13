@@ -1,3 +1,4 @@
 
 scripts/act/.secrets
 scripts/act/.env
+scripts/act/.vars

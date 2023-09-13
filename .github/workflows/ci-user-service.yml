@@ -58,10 +58,10 @@ jobs:
           project-path: ${{ env.PROJECT_PATH }}
           gh-token: ${{ secrets.GITHUB_TOKEN }}
           sonar-token: ${{ secrets.SONAR_TOKEN_USER_SERVICE }}
-          sonar-organization-key: ${{ env.SONAR_ORGANIZATION_KEY }}
-          sonar-project-key: ${{ env.SONAR_PROJECT_KEY_USER_SERVICE }}
-          sonar-project-name: ${{ env.SONAR_PROJECT_NAME_USER_SERVICE }}
-          is-test-runner: ${{ env.IS_TEST_RUNNER }}
+          sonar-organization-key: ${{ vars.SONAR_ORGANIZATION_KEY }}
+          sonar-project-key: ${{ vars.SONAR_PROJECT_KEY_USER_SERVICE }}
+          sonar-project-name: ${{ vars.SONAR_PROJECT_NAME_USER_SERVICE }}
+          is-test-runner: ${{ vars.IS_TEST_RUNNER }}
 
   pre-release:
     name: Create development release
