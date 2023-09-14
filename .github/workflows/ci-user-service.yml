@@ -1,0 +1,99 @@
+name: CI Workflow - User Service
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['main', 'dev']
+    paths:
+      - backend/src/Services/User/**
+      - .github/workflows/ci-user-service.yml
+
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: ['main', 'dev']
+    paths:
+      - backend/src/Services/User/**
+      - .github/workflows/ci-user-service.yml
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.sha }}
+  cancel-in-progress: true
+
+env:
+  USER_SERVICE_NAME: 'User'
+  USER_SERVICE_IMAGE_NAME: 'tourister-user'
+  PROJECT_PATH: 'backend/src/Services/User/src/User.API'
+  TESTS_PATH: 'backend/src/Services/User/tests/'
+
+jobs:
+  build-test-analyze:
+    name: 🏗️ Build, Test, Run Code Analysis
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+      DOTNET_NOLOGO: true
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🏗️ Build using composite action
+        uses: ./.github/actions/build
+        if: success()
+        with:
+          service-name: ${{ env.USER_SERVICE_NAME }}
+          project-path: ${{ env.PROJECT_PATH }}
+          dotnet-version: '8.0.x'
+          dotnet-quality: 'preview'
+
+      - name: 🧪 Run tests using composite action
+        uses: ./.github/actions/test
+        if: success()
+        with:
+          service-name: ${{ env.USER_SERVICE_NAME }}
+          tests-path: ${{ env.TESTS_PATH }}
+          reports-path: ${{ github.workspace }}/**/*.cobertura.xml
+          reports-output-path: ${{ github.workspace }}/output/test-results
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🚥 Run SonarCloud code analysis using composite action
+        uses: ./.github/actions/run-code-analysis
+        if: success()
+        with:
+          project-path: ${{ env.PROJECT_PATH }}
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+          sonar-token: ${{ secrets.SONAR_TOKEN_USER_SERVICE }}
+          sonar-organization-key: ${{ vars.SONAR_ORGANIZATION_KEY }}
+          sonar-project-key: ${{ vars.SONAR_PROJECT_KEY_USER_SERVICE }}
+          sonar-project-name: ${{ vars.SONAR_PROJECT_NAME_USER_SERVICE }}
+          is-test-runner: ${{ vars.IS_TEST_RUNNER }}
+
+  pre-release:
+    name: 📦 Create development release
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/dev' && github.event_name != 'pull_request' && success() }}
+    needs: build-test-analyze
+    steps:
+      - name: 📦 Create development release
+        uses: ./.github/actions/pre-release
+        with:
+          image-name: ${{ env.USER_SERVICE_IMAGE_NAME }}
+          dockerfile-path: 'backend/src/Services/User/Dockerfile.dev'
+          registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          registry-password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    name: 📦 Create stable release
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && success() }}
+    needs: build-test-analyze
+    steps:
+      - name: 📦 Create User Service Stable Release
+        uses: ./.github/actions/release
+        with:
+          image-name: ${{ env.USER_SERVICE_IMAGE_NAME }}
+          dockerfile-path: 'backend/src/Services/User/Dockerfile.prod'
+          registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          registry-password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          gh-token: ${{ secrets.GITHUB_TOKEN }}

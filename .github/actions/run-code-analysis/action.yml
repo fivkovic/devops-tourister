@@ -1,0 +1,76 @@
+﻿name: '🚥 Run Code Analysis on .NET project'
+description: 'Run SonarCloud Code Analysis on a specific .NET project'
+
+inputs:
+  project-path:
+    description: Path to the project that should be analyzed
+    required: true
+  gh-token:
+    description: Github Personal Access Token
+    required: true
+  sonar-token:
+    description: SonarCloud Authentication Token (Project-specific)
+    required: true
+  sonar-organization-key:
+    description: Unique identifier of the organization on SonarCloud
+    required: true
+  sonar-project-key:
+    description: The project key on SonarCloud
+    required: true
+  sonar-project-name:
+    description: The name of the SonarCloud project
+    required: true
+  is-test-runner:
+    required: true
+  sonar-branch-name:
+    description: This is used only in case of the test runner (act) to prevent pollution of analysis results on 'main' and 'dev' branches.
+    required: false
+    default: 'act-gh-actions-test'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 👀 Code Analysis Info
+      shell: bash
+      run: echo "Running code analysis on path ${{ inputs.project-path }} (is-test-runner=${{ inputs.is-test-runner }})"
+
+    - name: 💽 Set up JDK 17 for SonarCloud
+      uses: actions/setup-java@v3
+      with:
+        java-version: 17
+        distribution: 'zulu'
+
+    - name: 📨 Cache SonarCloud packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.sonar/cache
+        key: ${{ runner.os }}-sonar
+
+    - name: 📨 Cache SonarCloud scanner
+      id: cache-sonar-scanner
+      uses: actions/cache@v3
+      with:
+        path: ./.sonar/scanner
+        key: ${{ runner.os }}-sonar-scanner
+
+    - name: 📥 Install SonarCloud scanner
+      if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        mkdir -p ./.sonar/scanner
+        dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
+
+    - name: 🔎 Build and analyze code
+      env:
+        GITHUB_TOKEN: ${{ inputs.gh-token }}
+        SONAR_TOKEN: ${{ inputs.sonar-token }}
+      shell: bash
+      # TODO: Add this parameter later if required /d:sonar.dotnet.excludeTestProjects=true
+      run: |
+        if [[ "${{ inputs.is-test-runner }}" == "true" ]]; then
+          ./.sonar/scanner/dotnet-sonarscanner begin /d:sonar.token="${{ inputs.sonar-token }}" /o:"${{ inputs.sonar-organization-key }}" /k:"${{ inputs.sonar-project-key }}" /n:"${{ inputs.sonar-project-name }}" /d:sonar.branch.name="${{ inputs.sonar-branch-name }}" /d:sonar.host.url="https://sonarcloud.io"
+        else
+          ./.sonar/scanner/dotnet-sonarscanner begin /d:sonar.token="${{ inputs.sonar-token }}" /o:"${{ inputs.sonar-organization-key }}" /k:"${{ inputs.sonar-project-key }}" /n:"${{ inputs.sonar-project-name }}" /d:sonar.host.url="https://sonarcloud.io"
+        fi
+        dotnet build /p:SQExclusionFilter=".*\\Shared\\.*" ${{ inputs.project-path }}
+        ./.sonar/scanner/dotnet-sonarscanner end /d:sonar.token="${{ inputs.sonar-token }}"
