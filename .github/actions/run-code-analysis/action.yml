@@ -43,7 +43,7 @@ runs:
     - name: 📨 Cache SonarCloud packages
       uses: actions/cache@v3
       with:
-        path: /root/.sonar/cache
+        path: ~/.sonar/cache
         key: ${{ runner.os }}-sonar
 
     - name: 📨 Cache SonarCloud scanner
