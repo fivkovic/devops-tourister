@@ -74,6 +74,9 @@ jobs:
     if: ${{ github.ref == 'refs/heads/dev' && github.event_name != 'pull_request' && success() }}
     needs: build-test-analyze
     steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
       - name: 📦 Create development release
         uses: ./.github/actions/pre-release
         with:
@@ -89,6 +92,9 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && success() }}
     needs: build-test-analyze
     steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
       - name: 📦 Create Reservation Service Stable Release
         uses: ./.github/actions/release
         with:
