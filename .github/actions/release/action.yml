@@ -24,6 +24,7 @@ runs:
     - name: Set tag prefix
       id: set-tag-prefix
       if: ${{ github.ref == 'refs/heads/main' }}
+      shell: bash
       run: echo "::set-output name=tag_prefix::${{ inputs.image-name }}-v"
 
     - name: Bump version (minor) and create tag
