@@ -1,9 +1,9 @@
-﻿name: 'Test .NET service'
-description: 'Test .NET service'
+﻿name: '🧪 Test .NET project'
+description: 'Test .NET project'
 
 inputs:
   service-name:
-    description: Service name
+    description: Service name (used only for logging purposes)
     required: true
   tests-path:
     description: Test path
@@ -20,19 +20,21 @@ inputs:
   no-restore:
     # NOTE: Currently, no-restore flag should always be set to false.
     #       This is because the current implementation of the 'Restore NuGet packages' step in the 'build' action restores the packages only for the source project (instead for the entire solution)
+    #       This may cause some issues in the future so consider restoring packages for entire solution.
     description: Disable restoring of NuGet packages for building tests (tests aren't built in the 'build' composite action)
     required: false
     default: 'false'
 
 runs:
   using: 'composite'
+  defaults:
+    run:
+      shell: bash
   steps:
-    - name: Test Info
-      shell: bash
-      run: echo "Testing service ${{ inputs.service-name }}"
+    - name: 👀 Test Info
+      run: echo "Testing service ${{ inputs.service-name }} on tests path ${{ inputs.tests-path }}"
 
-    - name: Run Tests
-      shell: bash
+    - name: 🧪 Run Tests
       working-directory: ${{ inputs.tests-path }}
       run: |
         for file in $(find . -name "*.csproj" -type f); do
@@ -46,7 +48,7 @@ runs:
           fi
         done
 
-    - name: Generate Test Results and Reports
+    - name: 📜 Generate Test Results and Reports
       uses: phoenix-actions/test-reporting@v10
       if: always()
       with:
