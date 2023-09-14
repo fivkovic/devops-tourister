@@ -27,14 +27,13 @@ inputs:
 
 runs:
   using: 'composite'
-  defaults:
-    run:
-      shell: bash
   steps:
     - name: 👀 Test Info
+      shell: bash
       run: echo "Testing service ${{ inputs.service-name }} on tests path ${{ inputs.tests-path }}"
 
     - name: 🧪 Run Tests
+      shell: bash
       working-directory: ${{ inputs.tests-path }}
       run: |
         for file in $(find . -name "*.csproj" -type f); do

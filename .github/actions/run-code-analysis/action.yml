@@ -29,11 +29,9 @@ inputs:
 
 runs:
   using: 'composite'
-  defaults:
-    run:
-      shell: bash
   steps:
     - name: 👀 Code Analysis Info
+      shell: bash
       run: echo "Running code analysis on path ${{ inputs.project-path }} (is-test-runner=${{ inputs.is-test-runner }})"
 
     - name: 💽 Set up JDK 17 for SonarCloud
@@ -57,6 +55,7 @@ runs:
 
     - name: 📥 Install SonarCloud scanner
       if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+      shell: bash
       run: |
         mkdir -p ./.sonar/scanner
         dotnet tool update dotnet-sonarscanner --tool-path ./.sonar/scanner
@@ -65,6 +64,7 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.gh-token }}
         SONAR_TOKEN: ${{ inputs.sonar-token }}
+      shell: bash
       # TODO: Add this parameter later if required /d:sonar.dotnet.excludeTestProjects=true
       run: |
         if [[ "${{ inputs.is-test-runner }}" == "true" ]]; then
