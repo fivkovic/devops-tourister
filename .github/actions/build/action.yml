@@ -19,6 +19,9 @@ inputs:
 
 runs:
   using: 'composite'
+  defaults:
+    run:
+      shell: bash
   steps:
     - name: 👀 Build Info
       run: echo "Building service ${{ inputs.service-name }} on project path ${{ inputs.project-path }}"
