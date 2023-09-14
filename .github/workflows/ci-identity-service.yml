@@ -27,7 +27,7 @@ env:
 
 jobs:
   build-test-analyze:
-    name: Build, Test, Run Code Analysis
+    name: 🏗️ Build, Test, Run Code Analysis
     runs-on: ubuntu-latest
     env:
       DOTNET_CLI_TELEMETRY_OPTOUT: true
@@ -74,7 +74,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/dev' && github.event_name != 'pull_request' && success() }}
     needs: build-test-analyze
     steps:
-      - name: Create development release
+      - name: 📦 Create development release
         uses: ./.github/actions/pre-release
         with:
           image-name: ${{ env.IDENTITY_SERVICE_IMAGE_NAME }}
@@ -89,7 +89,7 @@ jobs:
     if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && success() }}
     needs: build-test-analyze
     steps:
-      - name: Create Identity Service Stable Release
+      - name: 📦 Create Identity Service Stable Release
         uses: ./.github/actions/release
         with:
           image-name: ${{ env.IDENTITY_SERVICE_IMAGE_NAME }}

@@ -27,13 +27,17 @@ env:
 
 jobs:
   build-test-analyze:
-    name: Build, Test, Run Code Analysis
+    name: 🏗️ Build, Test, Run Code Analysis
     runs-on: ubuntu-latest
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+      DOTNET_NOLOGO: true
     steps:
-      - name: Checkout code
+      - name: 🧾 Checkout code
         uses: actions/checkout@v4
 
-      - name: Build using composite action "Build .NET service"
+      - name: 🏗️ Build using composite action
         uses: ./.github/actions/build
         if: success()
         with:
@@ -42,7 +46,7 @@ jobs:
           dotnet-version: '8.0.x'
           dotnet-quality: 'preview'
 
-      - name: Run tests using composite action "Test .NET service"
+      - name: 🧪 Run tests using composite action
         uses: ./.github/actions/test
         if: success()
         with:
@@ -52,7 +56,7 @@ jobs:
           reports-output-path: ${{ github.workspace }}/output/test-results
           gh-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run SonarCloud code analysis using composite action "Run Code Analysis on .NET service"
+      - name: 🚥 Run SonarCloud code analysis using composite action
         uses: ./.github/actions/run-code-analysis
         if: success()
         with:
@@ -65,12 +69,12 @@ jobs:
           is-test-runner: ${{ vars.IS_TEST_RUNNER }}
 
   pre-release:
-    name: Create development release
+    name: 📦 Create development release
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/dev' && github.event_name != 'pull_request' && success() }}
     needs: build-test-analyze
     steps:
-      - name: Create development release
+      - name: 📦 Create development release
         uses: ./.github/actions/pre-release
         with:
           image-name: ${{ env.USER_SERVICE_IMAGE_NAME }}
@@ -80,12 +84,12 @@ jobs:
           gh-token: ${{ secrets.GITHUB_TOKEN }}
 
   release:
-    name: Create stable release
+    name: 📦 Create stable release
     runs-on: ubuntu-latest
     if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && success() }}
     needs: build-test-analyze
     steps:
-      - name: Create User Service Stable Release
+      - name: 📦 Create User Service Stable Release
         uses: ./.github/actions/release
         with:
           image-name: ${{ env.USER_SERVICE_IMAGE_NAME }}
