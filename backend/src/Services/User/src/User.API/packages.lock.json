@@ -1,0 +1,22 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net8.0": {
+      "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": {
+        "type": "Direct",
+        "requested": "[1.19.5, )",
+        "resolved": "1.19.5",
+        "contentHash": "Kaa1rBZdJFq5A0qgAcl6Bmk/UqLXTq9acEqxUlPEBA8oscmakLfkvuSXfG7Wa9t1/keaT85EuuDNgOo+Z9VYOQ=="
+      },
+      "shared": {
+        "type": "Project"
+      },
+      "user": {
+        "type": "Project",
+        "dependencies": {
+          "Shared": "[1.0.0, )"
+        }
+      }
+    }
+  }
+}

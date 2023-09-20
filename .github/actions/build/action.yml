@@ -33,7 +33,7 @@ runs:
       uses: actions/cache@v3
       with:
         path: ~/.nuget/packages
-        key: ${{ runner.os }}-dotnet-nuget
+        key: ${{ runner.os }}-dotnet-nuget-${{ hashFiles('**/packages.lock.json') }}
         restore-keys: ${{ runner.os }}-dotnet-nuget
 
     - name: 🤖 Restore .NET Tools
@@ -44,7 +44,7 @@ runs:
       if: success()
       shell: bash
       working-directory: ${{ inputs.solution-path }}
-      run: dotnet restore
+      run: dotnet restore --locked-mode
 
     - name: 🦺 Build .NET Project
       if: success()
