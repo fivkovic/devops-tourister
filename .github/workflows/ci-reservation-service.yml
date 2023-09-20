@@ -22,6 +22,7 @@ concurrency:
 env:
   RESERVATION_SERVICE_NAME: 'Reservation'
   RESERVATION_SERVICE_IMAGE_NAME: 'tourister-reservation'
+  SOLUTION_PATH: 'backend/src'
   PROJECT_PATH: 'backend/src/Services/Reservation/src/Reservation.API'
   TESTS_PATH: 'backend/src/Services/Reservation/tests/'
 
@@ -43,8 +44,7 @@ jobs:
         with:
           service-name: ${{ env.RESERVATION_SERVICE_NAME }}
           project-path: ${{ env.PROJECT_PATH }}
-          dotnet-version: '8.0.x'
-          dotnet-quality: 'preview'
+          solution-path: ${{ env.SOLUTION_PATH }}
 
       - name: 🧪 Run tests using composite action
         uses: ./.github/actions/test

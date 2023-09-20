@@ -3,18 +3,13 @@ description: 'Build .NET project'
 
 inputs:
   service-name:
-    description: Service name (used only for logging purposes)
+    description: Service name
     required: true
   project-path:
     description: Project path (relative to repository root)
     required: true
-  dotnet-version:
-    description: Version of target .NET SDK in format A.B.x (e.g. 8.0.x)
-    required: true
-  dotnet-quality:
-    description: Specifies the quality in the channel.
-      Latest build of the specified quality will be installed.
-      The possible values of dotnet-quality are [daily, signed, validated, preview, ga].
+  solution-path:
+    description: Path to solution (relative to repository root). Used for restoring NuGet packages for entire solution.
     required: true
 
 runs:
@@ -27,13 +22,12 @@ runs:
     - name: 💽 Setup .NET SDK
       uses: actions/setup-dotnet@v3
       with:
-        dotnet-version: ${{ inputs.dotnet-version }}
-        dotnet-quality: ${{ inputs.dotnet-quality }}
+        global-json-file: backend/src/.config/global.json
 
     - name: 🔬 Verify .NET SDK Setup
       if: success()
       shell: bash
-      run: echo -n ".NET SDK version -> " && dotnet --version
+      run: echo -n "Currently installed .NET SDK version -> " && dotnet --version
 
     - name: 📨 Cache NuGet Packages
       uses: actions/cache@v3
@@ -44,12 +38,12 @@ runs:
 
     - name: 🤖 Restore .NET Tools
       shell: bash
-      run: dotnet tool restore
+      run: dotnet tool restore --tool-manifest 'backend/src/.config/dotnet-tools.json'
 
-    - name: 📦 Restore NuGet packages
+    - name: 📦 Restore NuGet packages for Solution
       if: success()
       shell: bash
-      working-directory: ${{ inputs.project-path }}
+      working-directory: ${{ inputs.solution-path }}
       run: dotnet restore
 
     - name: 🦺 Build .NET Project
