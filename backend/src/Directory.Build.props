@@ -1,24 +1,39 @@
 <Project>
 
-  <!-- SDK settings -->
+  <!-- BEGIN - SDK settings -->
   <PropertyGroup>
     <!-- We set "allowPrerelease": true in our 'global.json' file so we don't want to be warned of using a preview version. -->
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
   </PropertyGroup>
+  <!-- END - SDK settings -->
 
-  <!-- Nuget settings -->
+  <!-- BEGIN - Nuget settings -->
   <PropertyGroup>
-    <!-- Use Directory.Packages.props for nuget package versions -->
+    <!-- Use Directory.Packages.props for nuget package versions. See more at: https://github.com/NuGet/Home/wiki/Centrally-managing-NuGet-packages -->
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-
-    <!-- Enable deterministic restore -->
-    <!-- See more at: https://devblogs.microsoft.com/nuget/enable-repeatable-package-restores-using-a-lock-file/-->
+    <!-- Enable deterministic restore. See more at: https://devblogs.microsoft.com/nuget/enable-repeatable-package-restores-using-a-lock-file/ -->
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
-    
+    <!-- Enable faster restore times. See more at: https://learn.microsoft.com/en-us/nuget/reference/msbuild-targets -->
+    <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
   </PropertyGroup>
-  
+  <!-- END - Nuget settings -->
 
-  <!-- BEGIN SonarQube MSBuild Configuration -->
+  <!-- BEGIN - Compiler settings common for all projects -->
+  <PropertyGroup>
+    <!-- Ensure all projects target the same framework. -->
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- Ensure all projects use the latest language version. -->
+    <LangVersion>latest</LangVersion> 
+    <!-- Turn on nullable-reference-type analysis. -->
+    <Nullable>enable</Nullable>
+    <!-- Turn on implicit usings. -->
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Opt into more advanced analysis. -->
+    <AnalysisLevel>latest</AnalysisLevel> 
+  </PropertyGroup>
+  <!-- END - Compiler settings common for all projects -->
+
+  <!-- BEGIN - SonarQube MSBuild Configuration -->
   <!-- SOURCE: https://stackoverflow.com/a/48687929/12546426
       
       This target customises the SonarQube MSBuild runner targets to limit the projects that are analysed.
@@ -54,6 +69,6 @@
     <Message Importance="high" Condition="$(MatchesSQExclusionFilter) != 'true' " Text="ExclusionFilter: project has not been excluded by the exclusion filter" />
   </Target>
 
-  <!-- END SonarQube MSBuild Configuration -->
+  <!-- END - SonarQube MSBuild Configuration -->
 
 </Project>

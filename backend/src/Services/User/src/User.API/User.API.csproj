@@ -1,9 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>7fb6a9a5-0f30-4b39-92f0-8b4dcf06accc</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <!-- NOTE: DockerfileContext is set to the backend/ directory as all commands in the Dockerfile are specified relative to that directory. -->
