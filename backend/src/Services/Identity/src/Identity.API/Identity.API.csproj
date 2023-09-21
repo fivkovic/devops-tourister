@@ -5,7 +5,7 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	  <!-- NOTE: DockerfileContext is set to the backend/ directory as all commands in the Dockerfile are specified relative to that directory. -->
     <DockerfileContext>..\..\..</DockerfileContext>
-    <DockerfileFile>..\..\Dockerfile</DockerfileFile>
+    <DockerfileFile>..\..\Dockerfile.dev</DockerfileFile>
     <DockerfileBuildArguments>--no-cache</DockerfileBuildArguments>
     <DockerfileTag>fivkovic/tourister/identity:dev-vs-debug</DockerfileTag>
   </PropertyGroup>
