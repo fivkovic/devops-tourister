@@ -81,7 +81,7 @@ jobs:
         uses: ./.github/actions/pre-release
         with:
           image-name: ${{ env.USER_SERVICE_IMAGE_NAME }}
-          dockerfile-path: 'backend/src/Services/User/Dockerfile.dev'
+          dockerfile-path: 'backend/src/Services/User/Dockerfile.prod'
           registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
           registry-password: ${{ secrets.DOCKERHUB_PASSWORD }}
           gh-token: ${{ secrets.GITHUB_TOKEN }}
