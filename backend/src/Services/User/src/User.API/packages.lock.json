@@ -11,7 +11,7 @@
       "shared": {
         "type": "Project"
       },
-      "user": {
+      "user.core": {
         "type": "Project",
         "dependencies": {
           "Shared": "[1.0.0, )"

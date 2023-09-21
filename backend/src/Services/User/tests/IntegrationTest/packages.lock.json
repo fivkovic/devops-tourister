@@ -1019,17 +1019,17 @@
       "shared": {
         "type": "Project"
       },
-      "user": {
-        "type": "Project",
-        "dependencies": {
-          "Shared": "[1.0.0, )"
-        }
-      },
       "user.api": {
         "type": "Project",
         "dependencies": {
           "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": "[1.19.5, )",
-          "User": "[1.0.0, )"
+          "User.Core": "[1.0.0, )"
+        }
+      },
+      "user.core": {
+        "type": "Project",
+        "dependencies": {
+          "Shared": "[1.0.0, )"
         }
       },
       "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": {

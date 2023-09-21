@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Reservation\Reservation.csproj" />
+    <ProjectReference Include="..\Reservation\Reservation.Core.csproj" />
   </ItemGroup>
 
 </Project>
