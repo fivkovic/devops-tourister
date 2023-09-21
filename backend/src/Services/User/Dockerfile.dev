@@ -11,12 +11,12 @@ ENV ASPNETCORE_URLS=http://+:80
 ENV ASPNETCORE_ENVIRONMENT=Docker
 WORKDIR /src
 COPY ["src/Shared/Shared.csproj", "Shared/"]
-COPY ["src/Services/User/src/User/User.csproj", "Services/User/src/User/"]
+COPY ["src/Services/User/src/User.Core/User.Core.csproj", "Services/User/src/User.Core/"]
 COPY ["src/Services/User/src/User.API/User.API.csproj", "Services/User/src/User.API/"]
 RUN --mount=type=cache,id=user_nuget,target=/root/.nuget/packages \
 	dotnet restore "Services/User/src/User.API/User.API.csproj"
 COPY ["src/Shared", "Shared/"]
-COPY ["src/Services/User/src/User/", "Services/User/src/User/"]
+COPY ["src/Services/User/src/User.Core/", "Services/User/src/User.Core/"]
 COPY ["src/Services/User/src/User.API/", "Services/User/src/User.API/"]
 WORKDIR "/src/Services/User/src/User.API"
 RUN --mount=type=cache,id=user_nuget,target=/root/.nuget/packages \

@@ -11,12 +11,12 @@ ENV ASPNETCORE_URLS=http://+:80
 ENV ASPNETCORE_ENVIRONMENT=Docker
 WORKDIR /src
 COPY ["src/Shared/Shared.csproj", "Shared/"]
-COPY ["src/Services/Reservation/src/Reservation/Reservation.csproj", "Services/Reservation/src/Reservation/"]
+COPY ["src/Services/Reservation/src/Reservation.Core/Reservation.Core.csproj", "Services/Reservation/src/Reservation.Core/"]
 COPY ["src/Services/Reservation/src/Reservation.API/Reservation.API.csproj", "Services/Reservation/src/Reservation.API/"]
 RUN --mount=type=cache,id=reservation_nuget,target=/root/.nuget/packages \
 	dotnet restore "Services/Reservation/src/Reservation.API/Reservation.API.csproj"
 COPY ["src/Shared", "Shared/"]
-COPY ["src/Services/Reservation/src/Reservation/", "Services/Reservation/src/Reservation/"]
+COPY ["src/Services/Reservation/src/Reservation.Core/", "Services/Reservation/src/Reservation.Core/"]
 COPY ["src/Services/Reservation/src/Reservation.API/", "Services/Reservation/src/Reservation.API/"]
 WORKDIR "/src/Services/Reservation/src/Reservation.API"
 RUN --mount=type=cache,id=reservation_nuget,target=/root/.nuget/packages \

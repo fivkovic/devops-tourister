@@ -11,12 +11,12 @@ ENV ASPNETCORE_URLS=http://+:80
 ENV ASPNETCORE_ENVIRONMENT=Docker
 WORKDIR /src
 COPY ["src/Shared/Shared.csproj", "Shared/"]
-COPY ["src/Services/Identity/src/Identity/Identity.csproj", "Services/Identity/src/Identity/"]
+COPY ["src/Services/Identity/src/Identity.Core/Identity.Core.csproj", "Services/Identity/src/Identity.Core/"]
 COPY ["src/Services/Identity/src/Identity.API/Identity.API.csproj", "Services/Identity/src/Identity.API/"]
 RUN --mount=type=cache,id=identity_nuget,target=/root/.nuget/packages \
     dotnet restore "Services/Identity/src/Identity.API/Identity.API.csproj"
 COPY ["src/Shared", "Shared/"]
-COPY ["src/Services/Identity/src/Identity/", "Services/Identity/src/Identity/"]
+COPY ["src/Services/Identity/src/Identity.Core/", "Services/Identity/src/Identity.Core/"]
 COPY ["src/Services/Identity/src/Identity.API/", "Services/Identity/src/Identity.API/"]
 WORKDIR "/src/Services/Identity/src/Identity.API"
 RUN --mount=type=cache,id=identity_nuget,target=/root/.nuget/packages \
