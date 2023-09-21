@@ -57,7 +57,7 @@ runs:
       if: ${{ github.ref == 'refs/heads/main' && success() }}
       shell: bash
       run: |
-        docker build -t ${{ inputs.registry-username }}/${{ inputs.image-name }}:${{ steps.tag-step.outputs.new_tag }} -f "${{ github.workspace }}/${{ inputs.dockerfile-path }}" .
+        docker build -t ${{ inputs.registry-username }}/${{ inputs.image-name }}:${{ steps.tag-step.outputs.new_tag }} -f "${{ github.workspace }}/${{ inputs.dockerfile-path }}" ${{ github.workspace }}/backend/
 
     - name: Push Docker image to Container Registry (Docker Hub)
       if: ${{ github.ref == 'refs/heads/main' && success() }}
