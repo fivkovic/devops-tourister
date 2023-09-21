@@ -10,6 +10,7 @@ ARG BUILD_CONFIGURATION=Release
 ENV ASPNETCORE_URLS=http://+:80
 ENV ASPNETCORE_ENVIRONMENT=Docker
 WORKDIR /src
+COPY ["src/Directory.Build.props", ""]
 COPY ["src/Shared/Shared.csproj", "Shared/"]
 COPY ["src/Services/Reservation/src/Reservation.Core/Reservation.Core.csproj", "Services/Reservation/src/Reservation.Core/"]
 COPY ["src/Services/Reservation/src/Reservation.API/Reservation.API.csproj", "Services/Reservation/src/Reservation.API/"]
