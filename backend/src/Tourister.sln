@@ -65,19 +65,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{E8A3A968
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{3C16D608-C196-474C-8A3E-352E49D0FF2B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity", "Services\Identity\src\Identity\Identity.csproj", "{4E1C7DFF-B0E1-414B-8E2A-2189338A338D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.Core", "Services\Identity\src\Identity.Core\Identity.Core.csproj", "{4E1C7DFF-B0E1-414B-8E2A-2189338A338D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.API", "Services\Identity\src\Identity.API\Identity.API.csproj", "{8B732945-2FDF-49D4-9692-B1E767D18A50}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Property", "Services\Property\src\Property\Property.csproj", "{73963FAA-3906-4273-BE55-97B2DE78A22E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Property.Core", "Services\Property\src\Property.Core\Property.Core.csproj", "{73963FAA-3906-4273-BE55-97B2DE78A22E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Property.API", "Services\Property\src\Property.API\Property.API.csproj", "{323A2C52-2CE7-4922-B8ED-AC8472D83E60}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reservation", "Services\Reservation\src\Reservation\Reservation.csproj", "{DADD51FB-9ECD-46C4-A8E4-2A81D7A3E819}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reservation.Core", "Services\Reservation\src\Reservation.Core\Reservation.Core.csproj", "{DADD51FB-9ECD-46C4-A8E4-2A81D7A3E819}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Reservation.API", "Services\Reservation\src\Reservation.API\Reservation.API.csproj", "{4A190F08-92B7-4B40-9318-8EB5CD21FD39}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "User", "Services\User\src\User\User.csproj", "{CCCBFB1F-99CC-4E74-88CF-17D2D8B5EB9E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "User.Core", "Services\User\src\User.Core\User.Core.csproj", "{CCCBFB1F-99CC-4E74-88CF-17D2D8B5EB9E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "User.API", "Services\User\src\User.API\User.API.csproj", "{45C8708D-7A41-43C3-AACA-589C592B463B}"
 EndProject
@@ -97,11 +97,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docker-compose", "docker-co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTest", "Services\Identity\tests\IntegrationTest\IntegrationTest.csproj", "{5DBB50B1-856A-4F5C-8290-D074DDD59993}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTest", "Services\Property\tests\IntegrationTest\IntegrationTest.csproj", "{C9582F24-1596-4A00-A276-DE93AA3C686C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTest", "Services\Property\tests\IntegrationTest\IntegrationTest.csproj", "{C9582F24-1596-4A00-A276-DE93AA3C686C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTest", "Services\Reservation\tests\IntegrationTest\IntegrationTest.csproj", "{86EA2EAA-ABC9-4335-9B8E-0A8AEF5393C9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTest", "Services\Reservation\tests\IntegrationTest\IntegrationTest.csproj", "{86EA2EAA-ABC9-4335-9B8E-0A8AEF5393C9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTest", "Services\User\tests\IntegrationTest\IntegrationTest.csproj", "{A34888AB-6574-4833-BFE2-E003D71A5FC9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTest", "Services\User\tests\IntegrationTest\IntegrationTest.csproj", "{A34888AB-6574-4833-BFE2-E003D71A5FC9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

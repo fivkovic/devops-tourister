@@ -11,11 +11,11 @@ ENV ASPNETCORE_URLS=http://+:80
 ENV ASPNETCORE_ENVIRONMENT=Docker
 WORKDIR /src
 COPY ["src/Shared/Shared.csproj", "Shared/"]
-COPY ["src/Services/Property/src/Property/Property.csproj", "Services/Property/src/Property/"]
+COPY ["src/Services/Property/src/Property.Core/Property.Core.csproj", "Services/Property/src/Property.Core/"]
 COPY ["src/Services/Property/src/Property.API/Property.API.csproj", "Services/Property/src/Property.API/"]
 RUN dotnet restore "Services/Property/src/Property.API/Property.API.csproj"
 COPY ["src/Shared", "Shared/"]
-COPY ["src/Services/Property/src/Property/", "Services/Property/src/Property/"]
+COPY ["src/Services/Property/src/Property.Core/", "Services/Property/src/Property.Core/"]
 COPY ["src/Services/Property/src/Property.API/", "Services/Property/src/Property.API/"]
 WORKDIR "/src/Services/Property/src/Property.API"
 RUN dotnet build "Property.API.csproj" -c $BUILD_CONFIGURATION --no-restore
