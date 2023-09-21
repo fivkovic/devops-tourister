@@ -12,7 +12,7 @@ ENV ASPNETCORE_ENVIRONMENT=Docker
 WORKDIR /src
 COPY ["src/Directory.Build.props", ""]
 COPY ["src/Shared/Shared.csproj", "Shared/"]
-COPY ["src/Services/Reservation/src/Reservation.Core/Reservation.csproj", "Services/Reservation/src/Reservation.Core/"]
+COPY ["src/Services/Reservation/src/Reservation.Core/Reservation.Core.csproj", "Services/Reservation/src/Reservation.Core/"]
 COPY ["src/Services/Reservation/src/Reservation.API/Reservation.API.csproj", "Services/Reservation/src/Reservation.API/"]
 RUN dotnet restore "Services/Reservation/src/Reservation.API/Reservation.API.csproj"
 COPY ["src/Shared", "Shared/"]
