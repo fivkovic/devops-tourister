@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Property\Property.Core.csproj" />
+    <ProjectReference Include="..\Property.Core\Property.Core.csproj" />
   </ItemGroup>
 
 </Project>
