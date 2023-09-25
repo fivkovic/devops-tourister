@@ -21,10 +21,14 @@ concurrency:
 
 env:
   IDENTITY_SERVICE_NAME: 'Identity'
-  IDENTITY_SERVICE_IMAGE_NAME: 'tourister-identity'
+  IDENTITY_SERVICE_IMAGE_NAME: 'identity-api'
   SOLUTION_PATH: 'backend/src'
   PROJECT_PATH: 'backend/src/Services/Identity/src/Identity.API'
   TESTS_PATH: 'backend/src/Services/Identity/tests/'
+  DOCKERFILE_PATH_DEV: '${{ github.workspace }}/backend/src/Services/Identity/Dockerfile.dev'
+  DOCKERFILE_PATH_PROD: '${{ github.workspace }}/backend/src/Services/Identity/Dockerfile.prod'
+  DOCKER_BUILD_CONTEXT: '${{ github.workspace }}/backend'
+  REGISTRY_REPOSITORY: 'tourister'
 
 jobs:
   build-test-analyze:
@@ -81,9 +85,11 @@ jobs:
         uses: ./.github/actions/pre-release
         with:
           image-name: ${{ env.IDENTITY_SERVICE_IMAGE_NAME }}
-          dockerfile-path: 'backend/src/Services/Identity/Dockerfile.prod'
+          dockerfile-path: ${{ env.DOCKERFILE_PATH_DEV }}
+          docker-build-context: ${{ env.DOCKER_BUILD_CONTEXT }}
           registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
           registry-password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          registry-repository: ${{ env.REGISTRY_REPOSITORY }}
           gh-token: ${{ secrets.GITHUB_TOKEN }}
 
   release:
@@ -99,7 +105,9 @@ jobs:
         uses: ./.github/actions/release
         with:
           image-name: ${{ env.IDENTITY_SERVICE_IMAGE_NAME }}
-          dockerfile-path: 'backend/src/Services/Identity/Dockerfile.prod'
+          dockerfile-path: ${{ env.DOCKERFILE_PATH_PROD }}
+          docker-build-context: ${{ env.DOCKER_BUILD_CONTEXT }}
           registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
           registry-password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          registry-repository: ${{ env.REGISTRY_REPOSITORY }}
           gh-token: ${{ secrets.GITHUB_TOKEN }}
