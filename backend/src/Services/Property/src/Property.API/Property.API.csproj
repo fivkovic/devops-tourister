@@ -6,8 +6,8 @@
     <!-- NOTE: DockerfileContext is set to the backend/ directory as all commands in the Dockerfile are specified relative to that directory. -->
     <DockerfileContext>..\..\..</DockerfileContext>
     <DockerfileFile>..\..\Dockerfile.dev</DockerfileFile>
-	  <DockerfileBuildArguments>--no-cache</DockerfileBuildArguments>
-	  <DockerfileTag>fivkovic/tourister/property:dev-vs-debug</DockerfileTag>
+	<DockerfileBuildArguments>--no-cache</DockerfileBuildArguments>
+	<DockerfileTag>fivkovic/tourister/property:dev-vs-debug</DockerfileTag>
   </PropertyGroup>
 
   <ItemGroup>
