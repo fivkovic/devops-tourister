@@ -56,6 +56,7 @@ runs:
     - name: Prepare Docker build variables
       id: prepare-docker-vars-step
       if: ${{ github.ref == 'refs/heads/dev' && success() }}
+      shell: bash
       run: |
         DOCKER_TAG="${{ inputs.registry-username }}/${{ inputs.registry-repository }}:${{ steps.tag-step.outputs.new_tag }}"
         echo "docker_tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
