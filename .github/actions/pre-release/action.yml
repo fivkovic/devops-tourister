@@ -40,7 +40,8 @@ runs:
       with:
         github_token: ${{ inputs.gh-token }}
         append_to_pre_release_tag: 'dev'
-        default_bump: prerelease
+        default_bump: false
+        default_prerelease_bump: prerelease
         tag_prefix: ${{ steps.set-tag-prefix-step.outputs.tag_prefix }}
 
     - name: Create a GitHub Pre-Release
