@@ -61,6 +61,8 @@ runs:
       uses: mathieudutour/github-tag-action@v6.1
       with:
         github_token: ${{ inputs.gh-token }}
+        release_branches: main
+        pre_release_branches: dev
         default_bump: ${{ steps.resolve-version-step.outputs.default_bump }}
         tag_prefix: ${{ steps.set-tag-prefix-step.outputs.tag_prefix }}
 
