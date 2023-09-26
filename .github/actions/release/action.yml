@@ -33,37 +33,14 @@ runs:
       shell: bash
       run: echo "tag_prefix=${{ inputs.image-name }}-v" >> $GITHUB_OUTPUT
 
-    - name: Resolve version from commit message
-      id: resolve-version-step
-      if: ${{ github.ref == 'refs/heads/main' && success() }}
-      shell: bash
-      run: |
-        COMMIT_MESSAGE=$(git log --format=%B -n 1 ${{ github.sha }})
-
-        if [[ $COMMIT_MESSAGE == *"(bump: major)"* ]]; then
-          echo "Major version bump detected in commit message."
-          echo "default_bump=major" >> $GITHUB_OUTPUT
-        elif [[ $COMMIT_MESSAGE == *"(bump: minor)"* ]]; then
-          echo "Minor version bump detected in commit message."
-          echo "::set-output name=default_bump::minor"
-          echo "default_bump=minor" >> $GITHUB_OUTPUT
-        elif [[ $COMMIT_MESSAGE == *"(bump: patch)"* ]]; then
-          echo "Patch version bump detected in commit message."
-          echo "default_bump=patch" >> $GITHUB_OUTPUT
-        else
-          echo "No version bump specified in commit message. Using default_bump: patch."
-          echo "default_bump=patch" >> $GITHUB_OUTPUT
-        fi
-
     - name: Bump version and create tag
       id: tag-step
       if: ${{ github.ref == 'refs/heads/main' && success() }}
       uses: mathieudutour/github-tag-action@v6.1
       with:
         github_token: ${{ inputs.gh-token }}
-        release_branches: main
-        pre_release_branches: dev
-        default_bump: ${{ steps.resolve-version-step.outputs.default_bump }}
+        release_branches: 'main'
+        pre_release_branches: 'dev'
         tag_prefix: ${{ steps.set-tag-prefix-step.outputs.tag_prefix }}
 
     - name: Create a GitHub Release
