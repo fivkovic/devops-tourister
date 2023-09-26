@@ -73,7 +73,7 @@ runs:
     - name: Build Docker image
       if: ${{ github.ref == 'refs/heads/main' && success() }}
       shell: bash
-      run: docker build -t ${{ steps.prepare-docker-vars-step.outputs.docker_tag }} -f ${{ inputs.dockerfile-path }} ${{ inputs.docker-build-context }}
+      run: docker build -t ${{ steps.prepare-docker-vars-step.outputs.docker_tag }} -t ${{ steps.prepare-docker-vars-step.outputs.docker_tag_latest }} -f ${{ inputs.dockerfile-path }} ${{ inputs.docker-build-context }}
 
     - name: Push Docker image to Container Registry (Docker Hub)
       if: ${{ github.ref == 'refs/heads/main' && success() }}
