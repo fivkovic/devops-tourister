@@ -59,7 +59,9 @@ runs:
       shell: bash
       run: |
         DOCKER_TAG="${{ inputs.registry-username }}/${{ inputs.registry-repository }}:${{ steps.tag-step.outputs.new_tag }}"
+        DOCKER_TAG_DEV_LATEST="${{ inputs.registry-username }}/${{ inputs.registry-repository }}:${{ inputs.image-name }}-dev-latest"
         echo "docker_tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
+        echo "docker_tag_dev_latest=$DOCKER_TAG_DEV_LATEST" >> $GITHUB_OUTPUT
 
     - name: Log in to Container Registry (Docker Hub)
       uses: docker/login-action@v2
@@ -76,4 +78,6 @@ runs:
     - name: Push Docker image to Container Registry (Docker Hub)
       if: ${{ github.ref == 'refs/heads/dev' && success() }}
       shell: bash
-      run: docker push ${{ steps.prepare-docker-vars-step.outputs.docker_tag }}
+      run: |
+        docker push ${{ steps.prepare-docker-vars-step.outputs.docker_tag }}
+        docker push ${{ steps.prepare-docker-vars-step.outputs.docker_tag_dev_latest }}
