@@ -111,3 +111,4 @@ jobs:
           registry-password: ${{ secrets.DOCKERHUB_PASSWORD }}
           registry-repository: ${{ env.REGISTRY_REPOSITORY }}
           gh-token: ${{ secrets.GITHUB_TOKEN }}
+
