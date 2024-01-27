@@ -1,0 +1,9 @@
+<Project>
+  <!-- BEGIN - Build Output settings -->
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <PropertyGroup>
+    <BaseOutputPath>$(SolutionDir)\..\bin\Shared\$(MSBuildProjectName)\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(SolutionDir)\..\obj\Shared\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <!-- END - Build Output settings -->
+</Project>

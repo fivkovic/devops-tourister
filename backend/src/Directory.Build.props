@@ -1,5 +1,13 @@
 <Project>
 
+  <!-- BEGIN - Build Output settings -->
+  <!-- NOTE: Each child project overrides these settings to preserve folder structure in 'obj' and 'bin' folders. -->
+  <PropertyGroup>
+    <BaseOutputPath>$(SolutionDir)\..\bin\$(MSBuildProjectName)\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(SolutionDir)\..\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <!-- END - Build Output settings -->
+
   <!-- BEGIN - SDK settings -->
   <PropertyGroup>
     <!-- We set "allowPrerelease": true in our 'global.json' file so we don't want to be warned of using a preview version. -->
