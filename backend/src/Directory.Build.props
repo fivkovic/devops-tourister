@@ -3,8 +3,8 @@
   <!-- BEGIN - Build Output settings -->
   <!-- NOTE: Each child project overrides these settings to preserve folder structure in 'obj' and 'bin' folders. -->
   <PropertyGroup>
-    <BaseOutputPath>$(SolutionDir)\..\bin\$(MSBuildProjectName)\</BaseOutputPath>
-    <BaseIntermediateOutputPath>$(SolutionDir)\..\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)\..\output\bin\$(MSBuildProjectName)\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)\..\output\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
   </PropertyGroup>
   <!-- END - Build Output settings -->
 

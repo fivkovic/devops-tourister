@@ -2,8 +2,8 @@
   <!-- BEGIN - Build Output settings -->
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
   <PropertyGroup>
-    <BaseOutputPath>$(SolutionDir)\..\bin\Proxy\$(MSBuildProjectName)\</BaseOutputPath>
-    <BaseIntermediateOutputPath>$(SolutionDir)\..\obj\Proxy\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)\..\..\output\bin\Proxy\$(MSBuildProjectName)\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)\..\..\output\obj\Proxy\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
   </PropertyGroup>
   <!-- END - Build Output settings -->
 </Project>

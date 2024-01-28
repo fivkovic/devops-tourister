@@ -2,8 +2,8 @@
   <!-- BEGIN - Build Output settings -->
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../../'))" />
   <PropertyGroup>
-    <BaseOutputPath>$(SolutionDir)\..\bin\Services\Reservation\$(MSBuildProjectName)\</BaseOutputPath>
-    <BaseIntermediateOutputPath>$(SolutionDir)\..\obj\Services\Reservation\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)\..\..\..\output\bin\Services\Reservation\$(MSBuildProjectName)\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)\..\..\..\output\obj\Services\Reservation\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
   </PropertyGroup>
   <!-- END - Build Output settings -->
 </Project>
