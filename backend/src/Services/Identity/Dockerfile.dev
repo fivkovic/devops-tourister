@@ -1,31 +1,42 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-preview AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER app
 WORKDIR /app
 EXPOSE 80
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0-preview AS build
-ARG BUILD_CONFIGURATION=Release
 ENV ASPNETCORE_URLS=http://+:80
-ENV ASPNETCORE_ENVIRONMENT=Docker
+ENV ASPNETCORE_ENVIRONMENT=Development
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_CONFIGURATION=Release
+
 WORKDIR /src
-COPY ["src/Directory.Build.props", ""]
+COPY ["src/nuget.config", "."]
+COPY ["src/Directory.Build.props", "."]
+COPY ["src/Directory.Packages.props", "."]
+
+COPY ["src/Shared/Directory.Build.props", "Shared/"]
 COPY ["src/Shared/Shared.csproj", "Shared/"]
+COPY ["src/Shared/packages.lock.json", "Shared/"]
+COPY ["src/Services/Identity/Directory.Build.props", "Services/Identity/"]
 COPY ["src/Services/Identity/src/Identity.Core/Identity.Core.csproj", "Services/Identity/src/Identity.Core/"]
+COPY ["src/Services/Identity/src/Identity.Core/packages.lock.json", "Services/Identity/src/Identity.Core/"]
 COPY ["src/Services/Identity/src/Identity.API/Identity.API.csproj", "Services/Identity/src/Identity.API/"]
+COPY ["src/Services/Identity/src/Identity.API/packages.lock.json", "Services/Identity/src/Identity.API/"]
 RUN --mount=type=cache,id=identity_nuget,target=/root/.nuget/packages \
-    dotnet restore "Services/Identity/src/Identity.API/Identity.API.csproj"
-COPY ["src/Shared", "Shared/"]
+    dotnet restore "Services/Identity/src/Identity.API/Identity.API.csproj" --use-lock-file --locked-mode
+
+COPY ["src/Shared/", "Shared/"]
 COPY ["src/Services/Identity/src/Identity.Core/", "Services/Identity/src/Identity.Core/"]
 COPY ["src/Services/Identity/src/Identity.API/", "Services/Identity/src/Identity.API/"]
-WORKDIR "/src/Services/Identity/src/Identity.API"
 RUN --mount=type=cache,id=identity_nuget,target=/root/.nuget/packages \
-    dotnet build "Identity.API.csproj" -c $BUILD_CONFIGURATION --no-restore
+    dotnet build "Services/Identity/src/Identity.API/Identity.API.csproj" -c $BUILD_CONFIGURATION --no-restore
 
 FROM build AS publish
 RUN --mount=type=cache,id=identity_nuget,target=/root/.nuget/packages \
-    dotnet publish "Identity.API.csproj" -c $BUILD_CONFIGURATION --no-build -o /app/publish /p:UseAppHost=false
+    dotnet publish "Services/Identity/src/Identity.API/Identity.API.csproj" -c $BUILD_CONFIGURATION --no-build -o /app/publish /p:UseAppHost=false
+WORKDIR /
 RUN rm -rf /root/.nuget /root/.local /root/.nuget/packages/*
 
 FROM base AS final
