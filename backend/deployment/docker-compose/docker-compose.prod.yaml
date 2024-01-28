@@ -8,35 +8,59 @@ services:
         container_name: postgres
         restart: unless-stopped
         environment:
-          - POSTGRES_USER=postgres
-          - POSTGRES_PASSWORD=postgres
+          - POSTGRES_USER=${POSTGRES_USER-}
+          - POSTGRES_PASSWORD=${POSTGRES_PASSWORD-}
         command:
           - "postgres"
           - "-c"
           - "wal_level=logical"
           - "-c"
           - "max_prepared_transactions=10"
+        healthcheck:
+          test: pg_isready -U postgres
+          interval: 2s
+          retries: 20
         ports:
-          - 5432:5432
+          - "5432:5432"
+        volumes:
+          - postgres:/var/lib/postgresql/data
         networks:
           - tourister-network
 
     mongo:
-        image: mongo:5.0.20                 # TODO: Bump to higher version.
+        image: mongo:7.0.5 
         container_name: mongo
         restart: unless-stopped
+        command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+        extra_hosts:
+          - "host.docker.internal:host-gateway"       # TODO: Re-check usage of this
+        healthcheck:
+#          test: echo 'db.stats().ok' | mongo localhost:27017/test --quiet
+          test: echo "try { rs.status() } 
+                catch (err) { 
+                  rs.initiate({_id:'rs0',members:[{_id:0,host:'host.docker.internal:27017'}]}) 
+                }" | mongosh --port 27017 --quiet
+          interval: 2s
+          retries: 20
         ports:
-          - 27017:27017
+          - "27017:27017"
         networks:
           - tourister-network
+        volumes:
+          - mongo_data:/data/db
+          - mongo_config:/data/configdb
 
     rabbitmq:
         image: rabbitmq:3.12.4-management
         container_name: rabbitmq
         restart: unless-stopped
+        healthcheck:
+          test: rabbitmq-diagnostics check_port_connectivity
+          interval: 2s
+          retries: 30
         ports:
-          - 5672:5672
-          - 15672:15672
+          - "5672:5672"
+          - "15672:15672"
         networks:
           - tourister-network
 
@@ -46,11 +70,8 @@ services:
           context: ../../
           dockerfile: src/Proxy/Dockerfile.prod
         container_name: proxy
-        environment:
-          - ASPNETCORE_ENVIRONMENT=Docker
-          - ASPNETCORE_URLS=http://+:80
         ports:
-          - 8000:80
+          - "8000:80"
         networks:
           - tourister-network
 
@@ -61,26 +82,39 @@ services:
           dockerfile: src/Services/Identity/Dockerfile.prod
         container_name: identity
         environment:
-          - ASPNETCORE_ENVIRONMENT=Docker
-          - ASPNETCORE_URLS=http://+:80
+          - PG_CONNECTION=${IDENTITY_PG_CONNECTION}
+          - RABBITMQ_CONNECTION=${RABBITMQ_CONNECTION}
         ports:
-          - 8001:80
+          - "8001:80"
         networks:
           - tourister-network
+        depends_on: 
+          postgres:
+            condition: service_healthy
+          rabbitmq:
+            condition: service_healthy
 
     property:
+        user: root # TODO: Re-check and try removing "driver: local" from volume definition.
         image: ${DOCKER_REGISTRY-}/property
         build:
           context: ../../
           dockerfile: src/Services/Property/Dockerfile.prod
         container_name: property
         environment:
-          - ASPNETCORE_ENVIRONMENT=Docker
-          - ASPNETCORE_URLS=http://+:80
+          - PG_CONNECTION=${PROPERTY_PG_CONNECTION}
+          - RABBITMQ_CONNECTION=${RABBITMQ_CONNECTION}
         ports:
-          - 8002:80
+          - "8006:80"
         networks:
           - tourister-network
+        volumes:
+          - property_images:/app/wwwroot/property_images
+        depends_on:
+          postgres:
+            condition: service_healthy
+          rabbitmq:
+            condition: service_healthy
 
     reservation:
         image: ${DOCKER_REGISTRY-}/reservation
@@ -89,12 +123,17 @@ services:
           dockerfile: src/Services/Reservation/Dockerfile.prod
         container_name: reservation
         environment:
-          - ASPNETCORE_ENVIRONMENT=Docker
-          - ASPNETCORE_URLS=http://+:80
+          - MONGODB_CONNECTION=${RESERVATION_MONGODB_CONNECTION}
+          - RABBITMQ_CONNECTION=${RABBITMQ_CONNECTION}
         ports:
-          - 8003:80
+          - "8011:80"
         networks:
           - tourister-network
+        depends_on:
+          mongo:
+            condition: service_healthy
+          rabbitmq:
+            condition: service_healthy
 
     user:
         image: ${DOCKER_REGISTRY-}/user
@@ -103,12 +142,24 @@ services:
           dockerfile: src/Services/User/Dockerfile.prod
         container_name: user
         environment:
-          - ASPNETCORE_ENVIRONMENT=Docker
-          - ASPNETCORE_URLS=http://+:80
+          - MONGODB_CONNECTION=${USER_MONGODB_CONNECTION}
+          - RABBITMQ_CONNECTION=${RABBITMQ_CONNECTION}
         ports:
-          - 8004:80
+          - "8016:80"
         networks:
           - tourister-network
+        depends_on:
+          mongo:
+            condition: service_healthy
+          rabbitmq:
+            condition: service_healthy
+
+volumes:
+  postgres:
+  mongo_data:
+  mongo_config:
+  property_images:
+    driver: local
 
 networks:
     tourister-network:
