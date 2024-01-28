@@ -6,8 +6,8 @@
     <!-- NOTE: DockerfileContext is set to the backend/ directory as all commands in the Dockerfile are specified relative to that directory. -->
     <DockerfileContext>..\..\..</DockerfileContext>
     <DockerfileFile>..\..\Dockerfile.dev</DockerfileFile>
-	<DockerfileBuildArguments>--no-cache</DockerfileBuildArguments>
-	<DockerfileTag>fivkovic/tourister/property:dev-vs-debug</DockerfileTag>
+    <DockerfileBuildArguments>--no-cache</DockerfileBuildArguments>
+    <DockerfileTag>fivkovic/tourister/property:dev-vs-debug</DockerfileTag>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,7 +15,26 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="MassTransit.RabbitMQ" />
+    <PackageReference Include="Mediator.SourceGenerator">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="MicroElements.Swashbuckle.FluentValidation" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Swashbuckle.AspNetCore" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Property.Core\Property.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>
