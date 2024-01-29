@@ -6,6 +6,7 @@ using Mediator;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Shared.Security;
 using Shared.Swagger;
 
 [assembly: MediatorOptions(Namespace = "Identity.API", ServiceLifetime = ServiceLifetime.Scoped)]
@@ -38,6 +39,7 @@ builder.Services.AddIdentityCore<User>(options =>
 
 // Add Authorization
 builder.Services.AddAuthorization();
+builder.Services.AddJwtAuthentication();
 
 // Add Swagger
 builder.Services.AddSwagger("Identity.API");
@@ -47,6 +49,11 @@ builder.Services.AddValidatorsFromAssemblyContaining<IdentityContext>();
 builder.Services.AddFluentValidationRulesToSwagger();
 
 var app = builder.Build();
+
+app.UseCORS();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseSwagger();
 app.UseSwaggerUI();
