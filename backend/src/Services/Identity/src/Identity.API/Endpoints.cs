@@ -1,5 +1,7 @@
 ﻿using Identity.Core.Commands;
 using Mediator;
+using Microsoft.AspNetCore.Mvc;
+using Shared.Security;
 using System.Security.Claims;
 
 namespace Identity.API;
@@ -17,6 +19,12 @@ public sealed class Endpoints
 
         routes.MapPost(_prefix + "/signin", SignIn)
             .Produces<SignInResponse>()
+            .ProducesValidationProblem()
+            .ProducesProblem(StatusCodes.Status400BadRequest);
+
+        routes.MapPost(_prefix + "/change-password", ChangePassword)
+            .RequireAuthorization()
+            .Produces(StatusCodes.Status200OK)
             .ProducesValidationProblem()
             .ProducesProblem(StatusCodes.Status400BadRequest);
     }
@@ -68,8 +76,7 @@ public sealed class Endpoints
         SignInRequest request,
         IMediator mediator,
         ILogger<Endpoints> logger,
-        CancellationToken cancellationToken
-    )
+        CancellationToken cancellationToken)
     {
         var validation = request.Validate();
         if (!validation.IsValid) return Results.ValidationProblem(validation.ToDictionary());
@@ -95,4 +102,37 @@ public sealed class Endpoints
         return Results.Problem(message, "invalid-credentials", StatusCodes.Status400BadRequest);
     }
 
+    private static async Task<IResult> ChangePassword(
+        ChangePasswordRequest request,
+        ClaimsPrincipal user,
+        IMediator mediator,
+        ILogger<Endpoints> logger,
+        CancellationToken cancellationToken)
+    {
+        request.ByUser(user.Id());
+
+        var validation = request.Validate();
+        if (!validation.IsValid) return Results.ValidationProblem(validation.ToDictionary());
+
+        logger.LogInformation("Handling change password request for user: {UserId}", request.UserId);
+
+        var response = await mediator.Send(request, cancellationToken);
+        if (response.IsSuccess)
+        {
+            logger.LogInformation("Successfully changed password for user: {UserId}", request.UserId);
+            return Results.Ok();
+        }
+
+        var error = response.Errors.First().Message;
+        var message = error switch
+        {
+            ChangePasswordError.UserNotFound => "The user you are trying to change the password for does not exist.",
+            ChangePasswordError.IncorrectPassword => "Sorry, your password was incorrect. Please double-check your password.",
+            _ => error,
+        };
+
+        logger.LogWarning("Change password request failed for user: {UserId}. Error={Error}.", request.UserId, error);
+
+        return Results.Problem(message, "change-password-failed", StatusCodes.Status400BadRequest);
+    }
 }
