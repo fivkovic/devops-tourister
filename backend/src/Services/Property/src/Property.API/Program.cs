@@ -22,6 +22,7 @@ builder.Services.AddMassTransit(config =>
     config.SetEndpointNameFormatter(new DefaultEndpointNameFormatter(includeNamespace: true));
 
     config.AddConsumer<CreateUser>();
+    config.AddConsumer<UpdateUser>();
 
     config.UsingRabbitMq((context, cfg) =>
     {
