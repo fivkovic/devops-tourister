@@ -38,6 +38,10 @@ public static class Endpoints
               .ProducesProblem(StatusCodes.Status400BadRequest)
               .Produces<Slot>();
 
+        routes.MapGet("/properties/{id:guid}/availability", GetAvailability)
+              .RequireAuthorization(AuthorizedRoles.Host)
+              .Produces<Slot[]>();
+
     }
 
     private static async Task<IResult> CreateProperty(
@@ -130,6 +134,20 @@ public static class Endpoints
 
         var error = result.Errors.First();
         return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    private static async Task<IResult> GetAvailability(
+        Guid id,
+        [AsParameters] GetSlots.Query query,
+        ClaimsPrincipal user,
+        IMediator mediator
+    )
+    {
+        query.ByUser(user.Id());
+        query.WithPropertyId(id);
+
+        var result = await mediator.Send(query);
+        return Results.Ok(result);
     }
 
 }
