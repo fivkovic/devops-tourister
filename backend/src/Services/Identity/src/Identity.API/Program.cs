@@ -1,7 +1,9 @@
 using FluentValidation;
 using Identity.API;
+using Identity.Core.Consumers;
 using Identity.Core.Database;
 using Identity.Core.Model;
+using MassTransit;
 using Mediator;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Identity;
@@ -22,6 +24,22 @@ builder.Services.AddDbContextPool<IdentityContext>(options =>
         builder.Configuration.GetConnectionString("Postgres");
 
     options.UseNpgsql(connectionString);
+});
+
+builder.Services.AddMassTransit(config =>
+{
+    config.SetEndpointNameFormatter(new DefaultEndpointNameFormatter(includeNamespace: true));
+
+    config.AddConsumer<UpdateUser>();
+
+    config.UsingRabbitMq((context, cfg) =>
+    {
+        var connectionString = Environment.GetEnvironmentVariable("RABBITMQ_CONNECTION") ??
+                               builder.Configuration.GetConnectionString("RabbitMQ");
+
+        cfg.Host(new Uri(connectionString!));
+        cfg.ConfigureEndpoints(context);
+    });
 });
 
 builder.Services.AddIdentityCore<User>(options =>
