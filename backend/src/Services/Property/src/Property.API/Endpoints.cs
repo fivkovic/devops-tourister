@@ -32,6 +32,12 @@ public static class Endpoints
               .ProducesProblem(StatusCodes.Status400BadRequest)
               .Produces(StatusCodes.Status200OK);
 
+        routes.MapPost("/properties/{id:guid}/availability", CreateAvailability)
+              .RequireAuthorization(AuthorizedRoles.Host)
+              .ProducesValidationProblem()
+              .ProducesProblem(StatusCodes.Status400BadRequest)
+              .Produces<Slot>();
+
     }
 
     private static async Task<IResult> CreateProperty(
@@ -102,6 +108,25 @@ public static class Endpoints
 
         var result = await mediator.Send(command);
         if (result.IsSuccess) return Results.Ok();
+
+        var error = result.Errors.First();
+        return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    private static async Task<IResult> CreateAvailability(
+        Guid id,
+        CreateAvailability.Command command,
+        ClaimsPrincipal user,
+        IMediator mediator)
+    {
+        command.ByUser(user.Id());
+        command.WithPropertyId(id);
+
+        var validation = command.Validate();
+        if (!validation.IsValid) return Results.ValidationProblem(validation.ToDictionary());
+
+        var result = await mediator.Send(command);
+        if (result.IsSuccess) return Results.Ok(result.Value);
 
         var error = result.Errors.First();
         return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
