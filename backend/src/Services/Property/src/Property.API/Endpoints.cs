@@ -7,6 +7,7 @@ using System.Security.Claims;
 namespace Property.API;
 
 using Property.Core.Model;
+using Property.Core.Queries;
 
 public static class Endpoints
 {
@@ -17,6 +18,11 @@ public static class Endpoints
               .ProducesValidationProblem()
               .Produces<Property>()
               .DisableAntiforgery();
+
+        routes.MapGet("/properties", GetProperties)
+              .RequireAuthorization(AuthorizedRoles.Host)
+              .Produces<Property[]>();
+
     }
 
     private static async Task<IResult> CreateProperty(
@@ -24,8 +30,7 @@ public static class Endpoints
         IFormFileCollection files,
         ClaimsPrincipal user,
         IMediator mediator,
-        ImageService imageService
-    )
+        ImageService imageService)
     {
         command.ByUser(user.Id());
 
@@ -47,5 +52,15 @@ public static class Endpoints
         var property = await mediator.Send(command);
         return Results.Ok(property);
     }
-}
 
+    private static async Task<IResult> GetProperties(
+        ClaimsPrincipal user,
+        Mediator mediator)
+    {
+        var command = new GetProperties.Query(user.Id());
+        var result = await mediator.Send(command);
+        return Results.Ok(result);
+    }
+
+
+}
