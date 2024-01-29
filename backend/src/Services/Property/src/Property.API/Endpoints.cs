@@ -46,6 +46,10 @@ public static class Endpoints
               .RequireAuthorization(AuthorizedRoles.Host)
               .ProducesProblem(StatusCodes.Status400BadRequest)
               .Produces(StatusCodes.Status200OK);
+
+        routes.MapGet("/properties/search", SearchProperties)
+              .ProducesValidationProblem()
+              .Produces<SearchProperties.Result>();
     }
 
     private static async Task<IResult> CreateProperty(
@@ -169,5 +173,17 @@ public static class Endpoints
 
         var error = result.Errors.First();
         return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    private static async Task<IResult> SearchProperties(
+        [AsParameters] SearchProperties.Query query,
+        IMediator mediator
+    )
+    {
+        var validation = query.Validate();
+        if (!validation.IsValid) return Results.ValidationProblem(validation.ToDictionary());
+
+        var result = await mediator.Send(query);
+        return Results.Ok(result);
     }
 }
