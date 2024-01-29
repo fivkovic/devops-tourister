@@ -1,6 +1,6 @@
-﻿namespace Identity.Core.Events;
+﻿namespace User.Core.Events;
 
-internal sealed record UserRegistered(
+public sealed record UserRegistered(
     Guid UserId,
     string Email,
     string FirstName,
@@ -9,7 +9,7 @@ internal sealed record UserRegistered(
     string Residence
 );
 
-public record UserUpdated(
+internal sealed record UserUpdated(
     Guid UserId,
     string FirstName,
     string LastName,
