@@ -8,3 +8,11 @@ public sealed record UserRegistered(
     string Role,
     string Residence
 );
+
+internal sealed record UserUpdated(
+    Guid UserId,
+    string FirstName,
+    string LastName,
+    string Role,
+    string Residence
+);
