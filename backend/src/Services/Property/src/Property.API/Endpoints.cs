@@ -26,6 +26,12 @@ public static class Endpoints
         routes.MapGet("/properties/{id:guid}", GetProperty)
               .Produces(StatusCodes.Status404NotFound)
               .Produces<Property>();
+
+        routes.MapPost("/properties/{id:guid}/settings", UpdateSettings)
+              .RequireAuthorization(AuthorizedRoles.Host)
+              .ProducesProblem(StatusCodes.Status400BadRequest)
+              .Produces(StatusCodes.Status200OK);
+
     }
 
     private static async Task<IResult> CreateProperty(
@@ -78,4 +84,27 @@ public static class Endpoints
         var error = result.Errors.First();
         return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
     }
+
+    private static async Task<IResult> UpdateSettings(
+        Guid id,
+        [AsParameters] UpdateSettings.Command command,
+        ClaimsPrincipal user,
+        IMediator mediator
+    )
+    {
+        command.ByUser(user.Id());
+
+        var validation = command.Validate();
+        if (!validation.IsValid)
+        {
+            return Results.ValidationProblem(validation.ToDictionary());
+        }
+
+        var result = await mediator.Send(command);
+        if (result.IsSuccess) return Results.Ok();
+
+        var error = result.Errors.First();
+        return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
+    }
+
 }
