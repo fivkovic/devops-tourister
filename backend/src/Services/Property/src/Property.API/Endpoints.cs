@@ -23,6 +23,9 @@ public static class Endpoints
               .RequireAuthorization(AuthorizedRoles.Host)
               .Produces<Property[]>();
 
+        routes.MapGet("/properties/{id:guid}", GetProperty)
+              .Produces(StatusCodes.Status404NotFound)
+              .Produces<Property>();
     }
 
     private static async Task<IResult> CreateProperty(
@@ -63,4 +66,16 @@ public static class Endpoints
     }
 
 
+    private static async Task<IResult> GetProperty(
+        Guid id,
+        IMediator mediator)
+    {
+        var query = new GetProperty.Query(id);
+        var result = await mediator.Send(query);
+
+        if (result.IsSuccess) return Results.Ok(result.Value);
+
+        var error = result.Errors.First();
+        return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
+    }
 }
