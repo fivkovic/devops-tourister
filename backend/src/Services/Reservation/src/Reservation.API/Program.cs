@@ -1,8 +1,12 @@
 using FluentValidation;
 using MassTransit;
+using MassTransit.Logging;
 using Mediator;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Extensions.DiagnosticSources;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Reservation.API;
 using Reservation.Core.Consumers;
 using Reservation.Core.Database;
@@ -18,12 +22,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors();
 builder.Services.AddMediator();
 
-builder.Services.AddSingleton(o =>
+builder.Services.AddSingleton<ReservationContext>(o =>
 {
     var connectionString = Environment.GetEnvironmentVariable("MONGODB_CONNECTION") ??
                            builder.Configuration.GetConnectionString("MongoDB");
 
-    var client = new MongoClient(connectionString);
+    var clientSettings = MongoClientSettings.FromConnectionString(connectionString);
+    var options = new InstrumentationOptions { CaptureCommandText = true };
+    clientSettings.ClusterConfigurator = cb => cb.Subscribe(new DiagnosticsActivityEventSubscriber(options));
+    
+    var client = new MongoClient(clientSettings);
     return new ReservationContext(client, databaseName: "reservation");
 });
 
@@ -63,6 +71,23 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
     options.SerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
 });
+
+builder.Services
+    .AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("Reservation.API"))
+    .WithTracing(config => config
+        .SetSampler(new AlwaysOnSampler())
+        .AddSource(DiagnosticHeaders.DefaultListenerName)
+        .AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources")
+        .AddAspNetCoreInstrumentation()
+        .AddOtlpExporter(c =>
+        {
+            var endpoint = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT") ?? 
+                           builder.Configuration.GetConnectionString("OTLPExporter");
+            
+            c.Endpoint = new Uri(endpoint!);
+        })
+    );
 
 var app = builder.Build();
 
