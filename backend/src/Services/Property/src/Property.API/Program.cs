@@ -27,13 +27,13 @@ builder.Services.AddDbContextPool<PropertyContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
-
 builder.Services.AddMassTransit(config =>
 {
     config.SetEndpointNameFormatter(new DefaultEndpointNameFormatter(includeNamespace: true));
 
     config.AddConsumer<CreateUser>();
     config.AddConsumer<UpdateUser>();
+    config.AddConsumer<DeleteUser>();
     config.AddConsumer<CancelReservation>();
     config.AddConsumer<AcceptReservation>();
     config.AddConsumer<ReviewProperty>();
