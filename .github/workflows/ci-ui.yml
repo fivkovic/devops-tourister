@@ -31,6 +31,7 @@ jobs:
   build:
     name: 🏗️ Build
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' }}
     steps:
       - name: 👀 Build Info
         shell: bash
@@ -59,7 +60,7 @@ jobs:
   build-publish-artifacts:
     name: 🏗️ Build and Publish Artifacts
     runs-on: ubuntu-latest
-    if: ${{ (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main') && github.event_name != 'pull_request' && success() }}
+    if: ${{ (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main') && github.event_name != 'pull_request' }}
     steps:
       - name: 👀 Build Info
         shell: bash
