@@ -54,6 +54,11 @@ public static class Endpoints
               .Produces(StatusCodes.Status200OK)
               .ProducesProblem(StatusCodes.Status400BadRequest);
 
+        routes.MapGet("/reservations/notifications/settings", GetSubscriptionSettings)
+              .RequireAuthorization()
+              .ProducesProblem(StatusCodes.Status400BadRequest)
+              .Produces<Subscription>();
+
         routes.MapPost("/reservations/notifications", UpdateSubscriptionSettings)
               .RequireAuthorization()
               .Produces(StatusCodes.Status200OK)
@@ -178,6 +183,17 @@ public static class Endpoints
         return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
     }
 
+    private static async Task<IResult> GetSubscriptionSettings(ClaimsPrincipal user, IMediator mediator)
+    {
+        var query = new GetSubscriptionSettings.Query(user.Id());
+        var result = await mediator.Send(query);
+
+        if (result.IsSuccess) return Results.Ok(result.Value);
+
+        var error = result.Errors.First();
+        return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
+    }
+
     private static async Task<IResult> UpdateSubscriptionSettings(
         [AsParameters] UpdateSubscriptionSettings.Command command,
         ClaimsPrincipal user,
@@ -198,5 +214,4 @@ public static class Endpoints
         var error = result.Errors.First();
         return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
     }
-
 }
