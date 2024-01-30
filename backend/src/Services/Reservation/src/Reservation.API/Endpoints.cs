@@ -1,11 +1,11 @@
 ﻿using Mediator;
+using Reservation.Core.Commands;
 using Reservation.Core.Queries;
 using Shared.Security;
 using System.Security.Claims;
 
 namespace Reservation.API;
 
-using Reservation.Core.Commands;
 using Reservation.Core.Model;
 
 public static class Endpoints
@@ -33,6 +33,11 @@ public static class Endpoints
         routes.MapGet("/reservations/active", ActiveReservations)
               .RequireAuthorization()
               .Produces<bool>();
+
+        routes.MapPost("/reservations/{id:guid}/update", UpdateReservation)
+              .RequireAuthorization(AuthorizedRoles.Host)
+              .Produces<Reservation>()
+              .ProducesProblem(StatusCodes.Status404NotFound);
     }
 
     private static async Task<IResult> Get(
@@ -90,4 +95,21 @@ public static class Endpoints
 
         return Results.Ok(result);
     }
+
+    private static async Task<IResult> UpdateReservation(
+        Guid id,
+        bool accepted,
+        ClaimsPrincipal user,
+        IMediator mediator
+    )
+    {
+        var command = new UpdateReservation.Command(id, user.Id(), accepted);
+
+        var result = await mediator.Send(command);
+        if (result.IsSuccess) return Results.Ok(result.Value);
+
+        var error = result.Errors.First();
+        return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
+    }
+
 }
