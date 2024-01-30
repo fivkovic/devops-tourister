@@ -1,47 +1,118 @@
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
+import { RouterView } from 'vue-router'
+import TheHeader from './components/header/TheHeader.vue'
 </script>
 
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+  <div class="flex h-screen flex-col">
+    <Suspense>
+      <TheHeader />
+    </Suspense>
+    <RouterView v-slot="{ Component }">
+      <Suspense>
+        <div class="flex-1">
+          <Component :is="Component" />
+        </div>
+      </Suspense>
+    </RouterView>
 
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+    <RouterView name="modal-router" v-slot="{ Component }">
+      <Suspense>
+        <div>
+          <Component :is="Component" />
+        </div>
+      </Suspense>
+    </RouterView>
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
+<style>
+@font-face {
+  font-family: 'Circular Std';
+  src: url('/src/assets/fonts/CircularStd-Book.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+@font-face {
+  font-family: 'Circular Std';
+  src: url('/src/assets/fonts/CircularStd-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
+@font-face {
+  font-family: 'Circular Std';
+  src: url('/src/assets/fonts/CircularStd-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+}
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  font-family: 'Circular Std', sans-serif;
+}
 
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+.pac-container {
+  height: 150px;
+}
+
+::-webkit-scrollbar {
+  background-color: #fafafa;
+  width: 15px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #b0b0b0;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #c2c2c2;
+  border-radius: 16px;
+  border: 4px solid transparent;
+  background-clip: padding-box;
+}
+
+.gmnoprint a,
+.gmnoprint span,
+.gm-style-cc {
+  display: none;
+}
+
+.gm-svpc {
+  display: none;
+}
+
+.gmnoprint div {
+  background: white !important;
+}
+
+.pac-container {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  font-family: 'Circular Std', sans-serif;
+  box-shadow: none;
+  @apply ml-px rounded-md border py-1 shadow-md;
+}
+
+.pac-container::after {
+  content: none;
+}
+
+.pac-item {
+  @apply cursor-pointer border-none px-3 py-2 text-[13px];
+}
+
+.pac-item-selected {
+  @apply bg-emerald-50 text-emerald-700;
+}
+
+.pac-matched {
+  @apply text-sm;
 }
 </style>
