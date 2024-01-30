@@ -21,10 +21,17 @@ public sealed record ReservationRequested(
     Reservation Reservation
 );
 
-public record ReservationAccepted(
+public sealed record ReservationAccepted(
     Guid ReservationId
 );
 
 public sealed record ReservationCancelled(
     Guid ReservationId
+);
+
+public sealed record PropertyReviewed(
+    Guid ReservationId,
+    int Rating,
+    string Content,
+    DateTimeOffset Timestamp
 );

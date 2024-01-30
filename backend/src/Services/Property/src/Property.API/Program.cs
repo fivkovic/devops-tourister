@@ -36,6 +36,7 @@ builder.Services.AddMassTransit(config =>
     config.AddConsumer<UpdateUser>();
     config.AddConsumer<CancelReservation>();
     config.AddConsumer<AcceptReservation>();
+    config.AddConsumer<ReviewProperty>();
 
     config.UsingRabbitMq((context, cfg) =>
     {
