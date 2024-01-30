@@ -21,6 +21,10 @@ public sealed record ReservationRequested(
     Reservation Reservation
 );
 
+public record ReservationAccepted(
+    Guid ReservationId
+);
+
 public sealed record ReservationCancelled(
     Guid ReservationId
 );

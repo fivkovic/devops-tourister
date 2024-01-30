@@ -18,6 +18,10 @@ public record ReservationAccepted(
     Guid ReservationId
 );
 
+public record ReservationRejected(
+    Guid ReservationId
+);
+
 public record ReservationCancelled(
     Guid ReservationId
 );
