@@ -38,6 +38,12 @@ public static class Endpoints
               .RequireAuthorization(AuthorizedRoles.Host)
               .Produces<Reservation>()
               .ProducesProblem(StatusCodes.Status404NotFound);
+
+        routes.MapPost("/reservations/{id:guid}/review", AddReview)
+              .RequireAuthorization(AuthorizedRoles.Customer)
+              .Produces(StatusCodes.Status200OK)
+              .ProducesProblem(StatusCodes.Status400BadRequest)
+              .ProducesValidationProblem();
     }
 
     private static async Task<IResult> Get(
@@ -112,4 +118,25 @@ public static class Endpoints
         return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
     }
 
+    private static async Task<IResult> AddReview(
+        Guid id,
+        [AsParameters] AddReview.Command command,
+        ClaimsPrincipal user,
+        IMediator mediator
+    )
+    {
+        command.ByUser(user.Id());
+
+        var validation = command.Validate();
+        if (!validation.IsValid)
+        {
+            return Results.ValidationProblem(validation.ToDictionary());
+        }
+
+        var result = await mediator.Send(command);
+        if (result.IsSuccess) return Results.Ok();
+
+        var error = result.Errors.First();
+        return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
+    }
 }
