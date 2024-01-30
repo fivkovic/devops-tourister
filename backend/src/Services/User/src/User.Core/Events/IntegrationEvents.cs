@@ -16,3 +16,11 @@ internal sealed record UserUpdated(
     string Role,
     string Residence
 );
+
+public sealed record HostReviewed(
+    Guid CustomerId,
+    Guid OwnerId,
+    int Rating,
+    string Content,
+    DateTimeOffset Timestamp
+);
