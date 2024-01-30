@@ -21,6 +21,11 @@ public static class Endpoints
               .ProducesValidationProblem()
               .ProducesProblem(StatusCodes.Status400BadRequest)
               .Produces<UserProfile>();
+
+        routes.MapGet("/users/{id:guid}/reviews", GetReviews)
+              .ProducesProblem(StatusCodes.Status400BadRequest)
+              .Produces<GetReviews.HostReviews>();
+
     }
 
     private static async Task<IResult> Get(Guid id, ClaimsPrincipal user, IMediator mediator)
@@ -54,4 +59,16 @@ public static class Endpoints
         var error = result.Errors.First();
         return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
     }
+
+    private static async Task<IResult> GetReviews(Guid id, IMediator mediator)
+    {
+        var query = new GetReviews.Query(id);
+        var result = await mediator.Send(query);
+
+        if (result.IsSuccess) return Results.Ok(result.Value);
+
+        var error = result.Errors.First();
+        return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
+    }
+
 }
