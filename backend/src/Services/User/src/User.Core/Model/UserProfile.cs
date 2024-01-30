@@ -13,7 +13,8 @@ public sealed class UserProfile
 
     public Review Review(UserProfile customer, int rating, string content, DateTimeOffset timestamp)
     {
-        AverageRating = (NumberOfReviews * AverageRating + rating) / (NumberOfReviews + 1);
+        var newRating = (NumberOfReviews * AverageRating + rating) / (NumberOfReviews + 1);
+        AverageRating = Math.Clamp(double.IsNaN(newRating) ? 0 : newRating, 0, 5);
         NumberOfReviews++;
         return new Review
         {
@@ -27,7 +28,8 @@ public sealed class UserProfile
 
     public void RemoveRating(int rating)
     {
-        AverageRating = (NumberOfReviews * AverageRating - rating) / (NumberOfReviews - 1);
+        var newRating = (NumberOfReviews * AverageRating - rating) / (NumberOfReviews - 1);
+        AverageRating = Math.Clamp(double.IsNaN(newRating) ? 0 : newRating, 0, 5);
         NumberOfReviews--;
     }
 }
