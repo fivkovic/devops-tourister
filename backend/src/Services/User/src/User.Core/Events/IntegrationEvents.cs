@@ -17,6 +17,10 @@ internal sealed record UserUpdated(
     string Residence
 );
 
+internal sealed record UserDeleted(
+    Guid UserId
+);
+
 public sealed record HostReviewed(
     Guid CustomerId,
     Guid OwnerId,
