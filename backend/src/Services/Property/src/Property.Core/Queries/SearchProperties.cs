@@ -22,6 +22,7 @@ public static class SearchProperties
     {
         public Property? Property { get; set; }
         public decimal TotalPrice { get; set; }
+        public decimal? SlotUnitPrice { get; set; }
     }
 
     public class Validator : AbstractValidator<Query>
@@ -70,6 +71,7 @@ public static class SearchProperties
                 .Select(s => new Result
                 {
                     Property = s.Property,
+                    SlotUnitPrice = s.CustomPrice,
                     TotalPrice = (s.CustomPrice ?? s.Property.UnitPrice) *
                                  (s.Property.PricingStrategy == PricingStrategy.PerNight ? nights : query.People)
                 });
