@@ -1,8 +1,8 @@
 ﻿using MassTransit;
 using Microsoft.Extensions.Logging;
 using Property.Core.Database;
-using Property.Core.Events;
 using Property.Core.Model;
+using Tourister.Events;
 
 namespace Property.Core.Consumers;
 

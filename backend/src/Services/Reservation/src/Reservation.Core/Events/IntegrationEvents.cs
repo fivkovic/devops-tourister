@@ -1,4 +1,4 @@
-﻿namespace Reservation.Core.Events;
+﻿namespace Tourister.Events;
 
 using Reservation.Core.Model;
 

@@ -1,7 +1,7 @@
 ﻿using MassTransit;
 using Microsoft.Extensions.Logging;
+using Tourister.Events;
 using User.Core.Database;
-using User.Core.Events;
 using User.Core.Model;
 
 namespace User.Core.Consumers;

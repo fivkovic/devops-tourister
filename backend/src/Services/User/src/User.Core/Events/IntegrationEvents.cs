@@ -1,4 +1,4 @@
-﻿namespace User.Core.Events;
+﻿namespace Tourister.Events;
 
 public sealed record UserRegistered(
     Guid UserId,

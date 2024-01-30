@@ -5,9 +5,8 @@ using Mediator;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Property.Core.Database;
-using Property.Core.Events;
 using Property.Core.Model;
-
+using Tourister.Events;
 using ValidationResult = FluentValidation.Results.ValidationResult;
 
 namespace Property.Core.Commands;
