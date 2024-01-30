@@ -20,3 +20,7 @@ public sealed record UserUpdated(
 public sealed record ReservationRequested(
     Reservation Reservation
 );
+
+public sealed record ReservationCancelled(
+    Guid ReservationId
+);
