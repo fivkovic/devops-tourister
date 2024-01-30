@@ -17,5 +17,6 @@ public sealed class Notification
     public Guid UserId { get; set; }
     public DateTimeOffset Timestamp { get; set; }
     public string Message { get; set; }
+    public string Title { get; set; }
     public Subscription Subscription { get; set; }
 }

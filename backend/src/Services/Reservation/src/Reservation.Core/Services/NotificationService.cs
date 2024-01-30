@@ -11,46 +11,45 @@ public sealed class NotificationService(ReservationContext context, ILogger<Noti
 {
     private static Notification Create<T>(T @event, Reservation reservation)
     {
-        var (userId, subscription, message) = @event switch
+        var (userId, subscription, title, message) = @event switch
         {
             ReservationRequested => (
                 reservation.Property.OwnerId,
                 Subscription.ReservationRequested,
-                $"A new reservation for {reservation.Property.Name} has been requested." +
-                "You can accept or reject the reservation from your dashboard."
+                $"A new reservation for {reservation.Property.Name} has been requested",
+                reservation.IsAccepted
+                    ? "The reservation has been automatically accepted according to your preferences"
+                    : "You can accept or reject the reservation from your dashboard"
             ),
             ReservationAccepted => (
                 reservation.Customer.Id,
                 Subscription.ReservationUpdated,
-                $"Your reservation for {reservation.Property.Name} has been accepted." +
-                "You can check in on {reservation.Start:yyyy-MM-dd}."
+                $"Your reservation for {reservation.Property.Name} has been accepted",
+                $"You can check in on {reservation.Start:ddd, dd MMM yyyy}"
             ),
             ReservationRejected => (
                 reservation.Customer.Id,
                 Subscription.ReservationUpdated,
-                $"Your reservation for {reservation.Property.Name} has been rejected." +
-                "Contact the host of the property for more information."
+                $"Your reservation for {reservation.Property.Name} has been rejected",
+                "Contact the host of the property for more information"
             ),
             ReservationCancelled => (
                 reservation.Property.OwnerId,
                 Subscription.ReservationCancelled,
-                $"The reservation {reservation.Id:N} for your property {reservation.Property.Name} has been cancelled."
+                $"The reservation {reservation.Id.ToString("N")[..16]} for your property {reservation.Property.Name} has been cancelled",
+                "You can contact the customer for more information"
             ),
             PropertyReviewed review => (
                 reservation.Property.OwnerId,
                 Subscription.PropertyReviewed,
-                $"""
-                A customer has reviewed your property {reservation.Property.Name} with a rating of {review.Rating}.
-                Here is what they had to say: {review.Content}
-                """
+                $"{reservation.Customer.FullName} has reviewed {reservation.Property.Name} with a rating of {review.Rating} stars",
+                review.Content
             ),
             HostReviewed review => (
                 reservation.Property.OwnerId,
                 Subscription.HostReviewed,
-                $"""
-                Your customer {reservation.Customer.FullName} has reviewed you as a host with a rating of {review.Rating}.
-                Here is what they had to say: "{review.Content}"
-                """
+                $"{reservation.Customer.FullName} has reviewed you with a rating of {review.Rating} stars",
+                review.Content
             ),
             _ => throw new ArgumentException("Invalid event type for a notification", typeof(T).FullName)
         };
@@ -60,6 +59,7 @@ public sealed class NotificationService(ReservationContext context, ILogger<Noti
             Id = Guid.NewGuid(),
             UserId = userId,
             Timestamp = DateTimeOffset.UtcNow,
+            Title = title,
             Message = message,
             Subscription = subscription
         };
