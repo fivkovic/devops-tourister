@@ -5,6 +5,7 @@ using System.Security.Claims;
 
 namespace Reservation.API;
 
+using Reservation.Core.Commands;
 using Reservation.Core.Model;
 
 public static class Endpoints
@@ -29,6 +30,9 @@ public static class Endpoints
               .ProducesProblem(StatusCodes.Status400BadRequest)
               .ProducesValidationProblem();
 
+        routes.MapGet("/reservations/active", ActiveReservations)
+              .RequireAuthorization()
+              .Produces<bool>();
     }
 
     private static async Task<IResult> Get(
@@ -79,4 +83,11 @@ public static class Endpoints
         };
     }
 
+    private static async Task<IResult> ActiveReservations(ClaimsPrincipal user, IMediator mediator)
+    {
+        var query = new HasActiveReservations.Query(user.Id(), user.Role());
+        var result = await mediator.Send(query);
+
+        return Results.Ok(result);
+    }
 }
