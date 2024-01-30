@@ -15,6 +15,13 @@ public static class Endpoints
               .RequireAuthorization()
               .ProducesValidationProblem()
               .Produces<Reservation[]>();
+
+        routes.MapDelete("/reservations/{id:guid}", DeleteReservation)
+              .RequireAuthorization(AuthorizedRoles.Customer)
+              .ProducesValidationProblem()
+              .Produces(StatusCodes.Status200OK)
+              .ProducesProblem(StatusCodes.Status400BadRequest);
+
     }
 
     private static async Task<IResult> Get(
@@ -34,4 +41,16 @@ public static class Endpoints
         var result = await mediator.Send(query);
         return Results.Ok(result);
     }
+
+    private static async Task<IResult> DeleteReservation(Guid id, ClaimsPrincipal user, IMediator mediator)
+    {
+        var command = new DeleteReservation.Command(id, user.Id());
+
+        var result = await mediator.Send(command);
+        if (result.IsSuccess) return Results.Ok();
+
+        var error = result.Errors.First();
+        return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
+    }
+
 }
