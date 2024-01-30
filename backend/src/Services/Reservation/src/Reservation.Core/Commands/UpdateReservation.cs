@@ -4,7 +4,7 @@ using Mediator;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using Reservation.Core.Database;
-using Reservation.Core.Events;
+using Tourister.Events;
 
 namespace Reservation.Core.Commands;
 

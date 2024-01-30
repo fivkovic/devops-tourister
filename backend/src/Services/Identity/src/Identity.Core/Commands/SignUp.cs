@@ -1,11 +1,11 @@
 ﻿using FluentResults;
 using FluentValidation;
 using Identity.Core.Database;
-using Identity.Core.Events;
 using Identity.Core.Model;
 using MassTransit;
 using Mediator;
 using Microsoft.AspNetCore.Identity;
+using Tourister.Events;
 using ValidationResult = FluentValidation.Results.ValidationResult;
 
 namespace Identity.Core.Commands;

@@ -3,8 +3,8 @@ using MassTransit;
 using Mediator;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
+using Tourister.Events;
 using User.Core.Database;
-using User.Core.Events;
 using User.Core.Services;
 
 namespace User.Core.Commands;

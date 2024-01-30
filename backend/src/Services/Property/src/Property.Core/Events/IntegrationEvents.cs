@@ -1,6 +1,6 @@
 ﻿using Property.Core.Model;
 
-namespace Property.Core.Events;
+namespace Tourister.Events;
 
 public sealed record UserRegistered(
     Guid UserId,

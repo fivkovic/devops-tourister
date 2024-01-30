@@ -1,8 +1,8 @@
-﻿using Identity.Core.Events;
-using Identity.Core.Model;
+﻿using Identity.Core.Model;
 using MassTransit;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
+using Tourister.Events;
 
 namespace Identity.Core.Consumers;
 
