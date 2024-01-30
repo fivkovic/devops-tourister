@@ -54,6 +54,11 @@ public static class Endpoints
               .Produces(StatusCodes.Status200OK)
               .ProducesProblem(StatusCodes.Status400BadRequest);
 
+        routes.MapPost("/reservations/notifications", UpdateSubscriptionSettings)
+              .RequireAuthorization()
+              .Produces(StatusCodes.Status200OK)
+              .ProducesProblem(StatusCodes.Status400BadRequest)
+              .ProducesValidationProblem();
     }
 
     private static async Task<IResult> Get(
@@ -167,6 +172,27 @@ public static class Endpoints
         var command = new DeleteNotification.Command(id, user.Id());
         var result = await mediator.Send(command);
 
+        if (result.IsSuccess) return Results.Ok();
+
+        var error = result.Errors.First();
+        return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    private static async Task<IResult> UpdateSubscriptionSettings(
+        [AsParameters] UpdateSubscriptionSettings.Command command,
+        ClaimsPrincipal user,
+        IMediator mediator
+    )
+    {
+        command.ByUser(user.Id(), user.Role());
+
+        var validation = command.Validate();
+        if (!validation.IsValid)
+        {
+            return Results.ValidationProblem(validation.ToDictionary());
+        }
+
+        var result = await mediator.Send(command);
         if (result.IsSuccess) return Results.Ok();
 
         var error = result.Errors.First();
