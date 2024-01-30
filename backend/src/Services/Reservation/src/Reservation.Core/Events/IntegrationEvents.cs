@@ -17,3 +17,7 @@ public record ReservationRequested(
 public record ReservationAccepted(
     Guid ReservationId
 );
+
+public record ReservationCancelled(
+    Guid ReservationId
+);
