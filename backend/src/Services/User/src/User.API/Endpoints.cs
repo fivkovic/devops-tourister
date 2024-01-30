@@ -21,6 +21,15 @@ public static class Endpoints
               .ProducesValidationProblem()
               .ProducesProblem(StatusCodes.Status400BadRequest)
               .Produces<UserProfile>();
+
+        routes.MapGet("/users/{id:guid}/reviews", GetReviews)
+              .ProducesProblem(StatusCodes.Status400BadRequest)
+              .Produces<GetReviews.HostReviews>();
+
+        routes.MapDelete("/users/{id:guid}/reviews/{reviewId:guid}", DeleteReview)
+              .RequireAuthorization(AuthorizedRoles.Customer)
+              .ProducesProblem(StatusCodes.Status400BadRequest)
+              .Produces(StatusCodes.Status200OK);
     }
 
     private static async Task<IResult> Get(Guid id, ClaimsPrincipal user, IMediator mediator)
@@ -54,4 +63,32 @@ public static class Endpoints
         var error = result.Errors.First();
         return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
     }
+
+    private static async Task<IResult> GetReviews(Guid id, IMediator mediator)
+    {
+        var query = new GetReviews.Query(id);
+        var result = await mediator.Send(query);
+
+        if (result.IsSuccess) return Results.Ok(result.Value);
+
+        var error = result.Errors.First();
+        return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    private static async Task<IResult> DeleteReview(
+        Guid id,
+        Guid reviewId,
+        ClaimsPrincipal user,
+        IMediator mediator
+    )
+    {
+        var command = new DeleteReview.Command(user.Id(), reviewId);
+        var result = await mediator.Send(command);
+
+        if (result.IsSuccess) return Results.Ok();
+
+        var error = result.Errors.First();
+        return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
+    }
+
 }

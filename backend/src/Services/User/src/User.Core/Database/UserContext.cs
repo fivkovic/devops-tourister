@@ -8,11 +8,13 @@ public class UserContext
     public IMongoClient Client { get; }
     public IMongoDatabase Database { get; }
     public IMongoCollection<UserProfile> UserProfiles { get; }
+    public IMongoCollection<Review> Reviews { get; }
 
     public UserContext(IMongoClient client, string database)
     {
         Client = client;
         Database = client.GetDatabase(database);
         UserProfiles = Database.GetCollection<UserProfile>(nameof(UserProfiles));
+        Reviews = Database.GetCollection<Review>(nameof(Reviews));
     }
 }

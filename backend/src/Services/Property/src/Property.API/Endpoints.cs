@@ -56,6 +56,11 @@ public static class Endpoints
               .ProducesValidationProblem()
               .ProducesProblem(StatusCodes.Status400BadRequest)
               .Produces<Reservation>();
+
+        routes.MapDelete("/properties/{id:guid}/reviews/{reviewId:guid}", DeleteReview)
+              .RequireAuthorization(AuthorizedRoles.Customer)
+              .ProducesProblem(StatusCodes.Status400BadRequest)
+              .Produces(StatusCodes.Status200OK);
     }
 
     private static async Task<IResult> CreateProperty(
@@ -208,6 +213,22 @@ public static class Endpoints
 
         var result = await mediator.Send(command);
         if (result.IsSuccess) return Results.Ok(result.Value);
+
+        var error = result.Errors.First();
+        return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    private static async Task<IResult> DeleteReview(
+        Guid id,
+        Guid reviewId,
+        ClaimsPrincipal user,
+        IMediator mediator
+    )
+    {
+        var command = new DeleteReview.Command(user.Id(), reviewId);
+
+        var result = await mediator.Send(command);
+        if (result.IsSuccess) return Results.Ok();
 
         var error = result.Errors.First();
         return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
