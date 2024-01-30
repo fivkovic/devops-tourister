@@ -1,8 +1,8 @@
 ﻿using MassTransit;
 using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
+using Tourister.Events;
 using User.Core.Database;
-using User.Core.Events;
 using User.Core.Model;
 
 namespace User.Core.Consumers;

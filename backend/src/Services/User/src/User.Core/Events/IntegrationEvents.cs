@@ -1,6 +1,6 @@
-﻿namespace User.Core.Events;
+﻿namespace Tourister.Events;
 
-public sealed record UserRegistered(
+public record UserRegistered(
     Guid UserId,
     string Email,
     string FirstName,
@@ -9,7 +9,7 @@ public sealed record UserRegistered(
     string Residence
 );
 
-internal sealed record UserUpdated(
+public record UserUpdated(
     Guid UserId,
     string FirstName,
     string LastName,
@@ -17,11 +17,11 @@ internal sealed record UserUpdated(
     string Residence
 );
 
-internal sealed record UserDeleted(
+public record UserDeleted(
     Guid UserId
 );
 
-public sealed record HostReviewed(
+public record HostReviewed(
     Guid CustomerId,
     Guid OwnerId,
     int Rating,

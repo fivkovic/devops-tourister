@@ -1,8 +1,11 @@
 using FluentValidation;
 using MassTransit;
+using MassTransit.Logging;
 using Mediator;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Property.API;
 using Property.Core.Consumers;
 using Property.Core.Database;
@@ -50,7 +53,7 @@ builder.Services.AddMassTransit(config =>
 
 builder.Services.AddSingleton(provider =>
 {
-    var storagePath = Path.Combine(builder.Environment.WebRootPath, "property_images");
+    var storagePath = Path.Combine(builder.Environment.WebRootPath, "images");
     return new ImageService(storagePath);
 });
 
@@ -69,6 +72,29 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
+
+builder.Services
+    .AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("Property.API"))
+    .WithTracing(config => config
+        .SetSampler(new AlwaysOnSampler())
+        .AddSource(DiagnosticHeaders.DefaultListenerName)
+        .AddAspNetCoreInstrumentation()
+        .AddEntityFrameworkCoreInstrumentation(o =>
+        {
+            o.EnrichWithIDbCommand = (activity, command) =>
+            {
+                activity.SetTag("db.statement", command.CommandText);
+            };
+        })
+        .AddOtlpExporter(c =>
+        {
+            var endpoint = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT") ??
+                           builder.Configuration.GetConnectionString("OTLPExporter");
+            
+            c.Endpoint = new Uri(endpoint!);
+        })
+    );
 
 var app = builder.Build();
 

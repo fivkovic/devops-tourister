@@ -10,6 +10,7 @@ services:
         environment:
           - POSTGRES_USER=${POSTGRES_USER-}
           - POSTGRES_PASSWORD=${POSTGRES_PASSWORD-}
+          - POSTGRES_EXTENSIONS=pg_trgm
         command:
           - "postgres"
           - "-c"
@@ -18,8 +19,6 @@ services:
           - "max_prepared_transactions=10"
         healthcheck:
           test: pg_isready -U postgres
-          interval: 2s
-          retries: 20
         ports:
           - "5432:5432"
         volumes:
@@ -32,16 +31,11 @@ services:
         container_name: mongo
         restart: unless-stopped
         command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
-        extra_hosts:
-          - "host.docker.internal:host-gateway"       # TODO: Re-check usage of this
         healthcheck:
-#          test: echo 'db.stats().ok' | mongo localhost:27017/test --quiet
           test: echo "try { rs.status() } 
                 catch (err) { 
                   rs.initiate({_id:'rs0',members:[{_id:0,host:'host.docker.internal:27017'}]}) 
                 }" | mongosh --port 27017 --quiet
-          interval: 2s
-          retries: 20
         ports:
           - "27017:27017"
         networks:
@@ -56,13 +50,31 @@ services:
         restart: unless-stopped
         healthcheck:
           test: rabbitmq-diagnostics check_port_connectivity
-          interval: 2s
-          retries: 30
         ports:
           - "5672:5672"
           - "15672:15672"
         networks:
           - tourister-network
+    
+    jaeger:
+        user: root # Required to run as root to access /badger volume.
+        image: jaegertracing/all-in-one:1.53
+        container_name: jaeger
+        restart: unless-stopped
+        environment:
+          - COLLECTOR_OTLP_ENABLED=true
+          - SPAN_STORAGE_TYPE=badger
+          - BADGER_EPHEMERAL=false
+          - BADGER_DIRECTORY_VALUE=/badger/data
+          - BADGER_DIRECTORY_KEY=/badger/key
+        ports:
+          - "16686:16686"
+          - "4317:4317"
+          - "4318:4318"
+        networks:
+          - tourister-network
+        volumes:
+          - jaeger_data:/badger
 
     proxy:
         image: ${DOCKER_REGISTRY-}/proxy
@@ -70,10 +82,15 @@ services:
           context: ../../
           dockerfile: src/Proxy/Dockerfile.prod
         container_name: proxy
+        environment:
+          - OTEL_EXPORTER_OTLP_ENDPOINT=${JAEGER_CONNECTION}
         ports:
           - "8000:80"
         networks:
           - tourister-network
+        depends_on:
+          jaeger:
+            condition: service_started
 
     identity:
         image: ${DOCKER_REGISTRY-}/identity
@@ -84,6 +101,7 @@ services:
         environment:
           - PG_CONNECTION=${IDENTITY_PG_CONNECTION}
           - RABBITMQ_CONNECTION=${RABBITMQ_CONNECTION}
+          - OTEL_EXPORTER_OTLP_ENDPOINT=${JAEGER_CONNECTION}
         ports:
           - "8001:80"
         networks:
@@ -93,9 +111,11 @@ services:
             condition: service_healthy
           rabbitmq:
             condition: service_healthy
+          jaeger:
+            condition: service_started
 
     property:
-        user: root # TODO: Re-check and try removing "driver: local" from volume definition.
+        user: root                                          # TODO: Re-check and try removing "driver: local" from volume definition.
         image: ${DOCKER_REGISTRY-}/property
         build:
           context: ../../
@@ -104,17 +124,20 @@ services:
         environment:
           - PG_CONNECTION=${PROPERTY_PG_CONNECTION}
           - RABBITMQ_CONNECTION=${RABBITMQ_CONNECTION}
+          - OTEL_EXPORTER_OTLP_ENDPOINT=${JAEGER_CONNECTION}
         ports:
           - "8006:80"
         networks:
           - tourister-network
         volumes:
-          - property_images:/app/wwwroot/property_images
+          - images:/app/wwwroot/images
         depends_on:
           postgres:
             condition: service_healthy
           rabbitmq:
             condition: service_healthy
+          jaeger:
+            condition: service_started
 
     reservation:
         image: ${DOCKER_REGISTRY-}/reservation
@@ -125,6 +148,7 @@ services:
         environment:
           - MONGODB_CONNECTION=${RESERVATION_MONGODB_CONNECTION}
           - RABBITMQ_CONNECTION=${RABBITMQ_CONNECTION}
+          - OTEL_EXPORTER_OTLP_ENDPOINT=${JAEGER_CONNECTION}
         ports:
           - "8011:80"
         networks:
@@ -134,6 +158,8 @@ services:
             condition: service_healthy
           rabbitmq:
             condition: service_healthy
+          jaeger:
+            condition: service_started
 
     user:
         image: ${DOCKER_REGISTRY-}/user
@@ -144,6 +170,8 @@ services:
         environment:
           - MONGODB_CONNECTION=${USER_MONGODB_CONNECTION}
           - RABBITMQ_CONNECTION=${RABBITMQ_CONNECTION}
+          - RESERVATIONS_SERVICE_URL=http://reservation:80
+          - OTEL_EXPORTER_OTLP_ENDPOINT=${JAEGER_CONNECTION}
         ports:
           - "8016:80"
         networks:
@@ -153,12 +181,15 @@ services:
             condition: service_healthy
           rabbitmq:
             condition: service_healthy
+          jaeger:
+            condition: service_started
 
 volumes:
   postgres:
   mongo_data:
   mongo_config:
-  property_images:
+  jaeger_data:
+  images:
     driver: local
 
 networks:

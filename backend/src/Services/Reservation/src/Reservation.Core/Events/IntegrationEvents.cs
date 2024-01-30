@@ -1,8 +1,8 @@
-﻿namespace Reservation.Core.Events;
+﻿namespace Tourister.Events;
 
 using Reservation.Core.Model;
 
-public sealed record UserRegistered(
+public record UserRegistered(
     Guid UserId,
     string Email,
     string FirstName,

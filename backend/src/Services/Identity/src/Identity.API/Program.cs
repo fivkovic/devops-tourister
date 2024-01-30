@@ -4,10 +4,13 @@ using Identity.Core.Consumers;
 using Identity.Core.Database;
 using Identity.Core.Model;
 using MassTransit;
+using MassTransit.Logging;
 using Mediator;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Shared.Security;
 using Shared.Swagger;
 
@@ -66,6 +69,29 @@ builder.Services.AddSwagger("Identity.API");
 // Add FluentValidation to Swagger
 builder.Services.AddValidatorsFromAssemblyContaining<IdentityContext>();
 builder.Services.AddFluentValidationRulesToSwagger();
+
+builder.Services
+    .AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("Identity.API"))
+    .WithTracing(config => config
+        .SetSampler(new AlwaysOnSampler())
+        .AddSource(DiagnosticHeaders.DefaultListenerName)
+        .AddAspNetCoreInstrumentation()
+        .AddEntityFrameworkCoreInstrumentation(o =>
+        {
+            o.EnrichWithIDbCommand = (activity, command) =>
+            {
+                activity.SetTag("db.statement", command.CommandText);
+            };
+        })
+        .AddOtlpExporter(c =>
+        {
+            var endpoint = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT") ??
+                           builder.Configuration.GetConnectionString("OTLPExporter");
+            
+            c.Endpoint = new Uri(endpoint!);
+        })
+    );
 
 var app = builder.Build();
 

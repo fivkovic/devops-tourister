@@ -59,7 +59,7 @@ public static class Endpoints
               .ProducesProblem(StatusCodes.Status400BadRequest)
               .Produces<Subscription>();
 
-        routes.MapPost("/reservations/notifications", UpdateSubscriptionSettings)
+        routes.MapPost("/reservations/notifications/settings", UpdateSubscriptionSettings)
               .RequireAuthorization()
               .Produces(StatusCodes.Status200OK)
               .ProducesProblem(StatusCodes.Status400BadRequest)

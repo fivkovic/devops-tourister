@@ -1,8 +1,8 @@
 ﻿using Identity.Core.Database;
-using Identity.Core.Events;
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Tourister.Events;
 
 namespace Identity.Core.Consumers;
 

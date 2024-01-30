@@ -1,8 +1,8 @@
 ﻿using MassTransit;
 using Microsoft.Extensions.Logging;
 using Reservation.Core.Database;
-using Reservation.Core.Events;
 using Reservation.Core.Services;
+using Tourister.Events;
 
 namespace Reservation.Core.Consumers;
 

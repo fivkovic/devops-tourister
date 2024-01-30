@@ -1,8 +1,8 @@
 ﻿using Property.Core.Model;
 
-namespace Property.Core.Events;
+namespace Tourister.Events;
 
-public sealed record UserRegistered(
+public record UserRegistered(
     Guid UserId,
     string Email,
     string FirstName,
@@ -10,30 +10,30 @@ public sealed record UserRegistered(
     string Role
 );
 
-public sealed record UserUpdated(
+public record UserUpdated(
     Guid UserId,
     string FirstName,
     string LastName,
     string Role
 );
 
-public sealed record UserDeleted(
+public record UserDeleted(
     Guid UserId
 );
 
-public sealed record ReservationRequested(
+public record ReservationRequested(
     Reservation Reservation
 );
 
-public sealed record ReservationAccepted(
+public record ReservationAccepted(
     Guid ReservationId
 );
 
-public sealed record ReservationCancelled(
+public record ReservationCancelled(
     Guid ReservationId
 );
 
-public sealed record PropertyReviewed(
+public record PropertyReviewed(
     Guid ReservationId,
     int Rating,
     string Content,
