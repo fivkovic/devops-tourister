@@ -1,4 +1,6 @@
-﻿namespace Property.Core.Events;
+﻿using Property.Core.Model;
+
+namespace Property.Core.Events;
 
 public sealed record UserRegistered(
     Guid UserId,
@@ -13,4 +15,8 @@ public sealed record UserUpdated(
     string FirstName,
     string LastName,
     string Role
+);
+
+public sealed record ReservationRequested(
+    Reservation Reservation
 );

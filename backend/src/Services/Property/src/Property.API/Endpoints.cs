@@ -50,6 +50,12 @@ public static class Endpoints
         routes.MapGet("/properties/search", SearchProperties)
               .ProducesValidationProblem()
               .Produces<SearchProperties.Result>();
+
+        routes.MapPost("/properties/{id:guid}/reservations", RequestReservation)
+              .RequireAuthorization(AuthorizedRoles.Customer)
+              .ProducesValidationProblem()
+              .ProducesProblem(StatusCodes.Status400BadRequest)
+              .Produces<Reservation>();
     }
 
     private static async Task<IResult> CreateProperty(
@@ -185,5 +191,25 @@ public static class Endpoints
 
         var result = await mediator.Send(query);
         return Results.Ok(result);
+    }
+
+    private static async Task<IResult> RequestReservation(
+        Guid id,
+        RequestReservation.Command command,
+        ClaimsPrincipal user,
+        IMediator mediator
+    )
+    {
+        command.ByUser(user.Id());
+        command.WithPropertyId(id);
+
+        var validation = command.Validate();
+        if (!validation.IsValid) return Results.ValidationProblem(validation.ToDictionary());
+
+        var result = await mediator.Send(command);
+        if (result.IsSuccess) return Results.Ok(result.Value);
+
+        var error = result.Errors.First();
+        return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
     }
 }
