@@ -7,6 +7,7 @@ namespace Reservation.Core.Consumers;
 
 public sealed class CreateReservation(
     ReservationContext context,
+    //Notifications notifications,
     ILogger<CreateReservation> logger) : IConsumer<ReservationRequested>
 {
     public async Task Consume(ConsumeContext<ReservationRequested> consumer)
@@ -24,5 +25,7 @@ public sealed class CreateReservation(
             logger.LogInformation("Reservation {ReservationId} will be automatically accepted for customer {CustomerId}",
                                    reservation.Id, reservation.Customer.Id);
         }
+
+        //await notifications.Send(consumer.Message, reservation);
     }
 }
