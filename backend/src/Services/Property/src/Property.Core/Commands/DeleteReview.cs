@@ -16,18 +16,20 @@ public static class DeleteReview
     {
         public async ValueTask<Result> Handle(Command command, CancellationToken cancellationToken)
         {
-            var review = await context.Reviews.FirstOrDefaultAsync(
-                r => r.Id == command.ReviewId &&
-                     r.Customer.Id == command.CustomerId,
-                cancellationToken
-            );
+            var review = await context
+                .Reviews
+                .FirstOrDefaultAsync(r => r.Customer.Id == command.CustomerId &&
+                                          r.Id == command.ReviewId, cancellationToken);
 
             if (review is null) return new ReviewNotFound();
 
-            var property = await context.Properties
+            var property = await context
+                .Properties
                 .FirstOrDefaultAsync(u => u.Id == review.PropertyId, cancellationToken);
 
             property?.RemoveRating(review.Rating);
+
+            context.Remove(review);
             await context.SaveChangesAsync(cancellationToken);
 
             logger.LogInformation("Deleted review {ReviewId} for property {PropertyId}", review.Id, review.PropertyId);
