@@ -22,6 +22,13 @@ public static class Endpoints
               .Produces(StatusCodes.Status200OK)
               .ProducesProblem(StatusCodes.Status400BadRequest);
 
+        routes.MapPost("/reservations/{id:guid}/cancel", Cancel)
+              .RequireAuthorization(AuthorizedRoles.Customer)
+              .Produces<Reservation>()
+              .Produces(StatusCodes.Status404NotFound)
+              .ProducesProblem(StatusCodes.Status400BadRequest)
+              .ProducesValidationProblem();
+
     }
 
     private static async Task<IResult> Get(
@@ -51,6 +58,25 @@ public static class Endpoints
 
         var error = result.Errors.First();
         return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    private static async Task<IResult> Cancel(Guid id, ClaimsPrincipal user, IMediator mediator)
+    {
+        var command = new CancelReservation.Command(id, user.Id());
+        var result = await mediator.Send(command);
+
+        if (result.IsSuccess) return Results.Ok(result.Value);
+
+        var error = result.Errors.First();
+        return error switch
+        {
+            CancelReservation.ReservationNotFound => Results.NotFound(),
+            CancelReservation.ReservationUncancellable or _ => Results.Problem(
+                error.Message,
+                "RESERVATION_UNCANCELLABLE",
+                StatusCodes.Status400BadRequest
+            ),
+        };
     }
 
 }
