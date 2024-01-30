@@ -44,6 +44,11 @@ public static class Endpoints
               .Produces(StatusCodes.Status200OK)
               .ProducesProblem(StatusCodes.Status400BadRequest)
               .ProducesValidationProblem();
+
+        routes.MapGet("/reservations/notifications", GetNotifications)
+              .RequireAuthorization()
+              .Produces<List<Notification>>();
+
     }
 
     private static async Task<IResult> Get(
@@ -139,4 +144,13 @@ public static class Endpoints
         var error = result.Errors.First();
         return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
     }
+
+    private static async Task<IResult> GetNotifications(ClaimsPrincipal user, IMediator mediator)
+    {
+        var query = new GetNotifications.Query(user.Id());
+        var result = await mediator.Send(query);
+
+        return Results.Ok(result);
+    }
+
 }

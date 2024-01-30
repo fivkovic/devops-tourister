@@ -6,6 +6,7 @@ using MongoDB.Driver;
 using Reservation.API;
 using Reservation.Core.Consumers;
 using Reservation.Core.Database;
+using Reservation.Core.Services;
 using Shared.Security;
 using Shared.Swagger;
 using System.Text.Json.Serialization;
@@ -43,6 +44,8 @@ builder.Services.AddMassTransit(config =>
         cfg.ConfigureEndpoints(context);
     });
 });
+
+builder.Services.AddScoped<NotificationService>();
 
 builder.Services.AddAuthorization();
 builder.Services.AddJwtAuthentication();
