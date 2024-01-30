@@ -1,0 +1,17 @@
+# .dockerignore for Vue.js and Vite projects
+
+# Ignore node_modules directory
+node_modules
+
+# Ignore build artifacts
+/dist
+/.nuxt
+/.vite
+
+# Ignore development and local files
+*.log
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local

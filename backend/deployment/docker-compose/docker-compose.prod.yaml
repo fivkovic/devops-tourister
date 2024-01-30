@@ -77,7 +77,7 @@ services:
           - jaeger_data:/badger
 
     proxy:
-        image: ${DOCKER_REGISTRY-}/proxy
+        image: ${DOCKER_REGISTRY-}/proxy:local-prod
         build:
           context: ../../
           dockerfile: src/Proxy/Dockerfile.prod
@@ -93,7 +93,7 @@ services:
             condition: service_started
 
     identity:
-        image: ${DOCKER_REGISTRY-}/identity
+        image: ${DOCKER_REGISTRY-}/identity:local-prod
         build:
           context: ../../
           dockerfile: src/Services/Identity/Dockerfile.prod
@@ -116,7 +116,7 @@ services:
 
     property:
         user: root                                          # TODO: Re-check and try removing "driver: local" from volume definition.
-        image: ${DOCKER_REGISTRY-}/property
+        image: ${DOCKER_REGISTRY-}/property:local-prod
         build:
           context: ../../
           dockerfile: src/Services/Property/Dockerfile.prod
@@ -140,7 +140,7 @@ services:
             condition: service_started
 
     reservation:
-        image: ${DOCKER_REGISTRY-}/reservation
+        image: ${DOCKER_REGISTRY-}/reservation:local-prod
         build:
           context: ../../
           dockerfile: src/Services/Reservation/Dockerfile.prod
@@ -162,7 +162,7 @@ services:
             condition: service_started
 
     user:
-        image: ${DOCKER_REGISTRY-}/user
+        image: ${DOCKER_REGISTRY-}/user:local-prod
         build:
           context: ../../
           dockerfile: src/Services/User/Dockerfile.prod
@@ -183,6 +183,15 @@ services:
             condition: service_healthy
           jaeger:
             condition: service_started
+
+    ui:
+        image: ${DOCKER_REGISTRY-}/ui:local-prod
+        build:
+          context: ../../../frontend
+          dockerfile: Dockerfile.prod
+        container_name: ui
+        ports:
+          - "3000:80"
 
 volumes:
   postgres:
