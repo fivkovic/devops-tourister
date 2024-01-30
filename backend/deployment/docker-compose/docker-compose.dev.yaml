@@ -10,6 +10,7 @@ services:
         environment:
           - POSTGRES_USER=${POSTGRES_USER-}
           - POSTGRES_PASSWORD=${POSTGRES_PASSWORD-}
+          - POSTGRES_EXTENSIONS=pg_trgm
         command:
           - "postgres"
           - "-c"
@@ -18,8 +19,6 @@ services:
           - "max_prepared_transactions=10"
         healthcheck:
           test: pg_isready -U postgres
-          interval: 2s
-          retries: 20
         ports:
           - "5432:5432"
         volumes:
@@ -32,16 +31,11 @@ services:
         container_name: mongo
         restart: unless-stopped
         command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
-        extra_hosts:
-          - "host.docker.internal:host-gateway"       # TODO: Re-check usage of this
         healthcheck:
-#          test: echo 'db.stats().ok' | mongo localhost:27017/test --quiet
           test: echo "try { rs.status() } 
                 catch (err) { 
                   rs.initiate({_id:'rs0',members:[{_id:0,host:'host.docker.internal:27017'}]}) 
                 }" | mongosh --port 27017 --quiet
-          interval: 2s
-          retries: 20
         ports:
           - "27017:27017"
         networks:
@@ -56,8 +50,6 @@ services:
         restart: unless-stopped
         healthcheck:
           test: rabbitmq-diagnostics check_port_connectivity
-          interval: 2s
-          retries: 30
         ports:
           - "5672:5672"
           - "15672:15672"
@@ -95,7 +87,7 @@ services:
             condition: service_healthy
 
     property:
-        user: root # TODO: Re-check and try removing "driver: local" from volume definition.
+        user: root                                          # TODO: Re-check and try removing "driver: local" from volume definition.
         image: ${DOCKER_REGISTRY-}/property
         build:
           context: ../../
@@ -144,6 +136,7 @@ services:
         environment:
           - MONGODB_CONNECTION=${USER_MONGODB_CONNECTION}
           - RABBITMQ_CONNECTION=${RABBITMQ_CONNECTION}
+          - RESERVATIONS_SERVICE_URL=http://reservation:80
         ports:
           - "8016:80"
         networks:
