@@ -30,7 +30,7 @@ public static class Endpoints
 
         routes.MapGet("/users/{id:guid}/reviews", GetReviews)
               .ProducesProblem(StatusCodes.Status400BadRequest)
-              .Produces<GetReviews.HostReviews>();
+              .Produces<List<Review>>();
 
         routes.MapDelete("/users/{id:guid}/reviews/{reviewId:guid}", DeleteReview)
               .RequireAuthorization(AuthorizedRoles.Customer)
@@ -88,10 +88,7 @@ public static class Endpoints
         var query = new GetReviews.Query(id);
         var result = await mediator.Send(query);
 
-        if (result.IsSuccess) return Results.Ok(result.Value);
-
-        var error = result.Errors.First();
-        return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
+        return Results.Ok(result);
     }
 
     private static async Task<IResult> DeleteReview(

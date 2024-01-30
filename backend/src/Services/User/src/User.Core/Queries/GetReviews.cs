@@ -1,36 +1,24 @@
-﻿using FluentResults;
-using Mediator;
+﻿using Mediator;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using User.Core.Database;
+using User.Core.Model;
 
 namespace User.Core.Queries;
 
-using User.Core.Model;
-
-public class GetReviews
+public sealed class GetReviews
 {
-    public record Query(Guid UserId) : IQuery<Result<HostReviews>>;
+    public record Query(Guid UserId) : IQuery<IQueryable<Review>>;
 
-    public record HostReviews(UserProfile Host, IQueryable<Review> Reviews);
-
-    public class HostNotFound() : Error("Host not found");
-
-    public class Handler(UserContext context) : IQueryHandler<Query, Result<HostReviews>>
+    public class Handler(UserContext context) : IQueryHandler<Query, IQueryable<Review>>
     {
-        public async ValueTask<Result<HostReviews>> Handle(Query query, CancellationToken cancellationToken)
+        public ValueTask<IQueryable<Review>> Handle(Query query, CancellationToken cancellationToken)
         {
-            var host = await context.UserProfiles
-                .Find(u => u.Id == query.UserId)
-                .FirstOrDefaultAsync(cancellationToken);
-
-            if (host is null) return new HostNotFound();
-
             var reviews = context.Reviews
                 .AsQueryable()
                 .Where(r => r.OwnerId == query.UserId);
 
-            return new HostReviews(host, reviews);
+            return new ValueTask<IQueryable<Review>>(reviews);
         }
     }
 }
