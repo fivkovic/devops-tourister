@@ -4,7 +4,8 @@ import { setUser } from '../stores/userStore'
 
 const baseURL = import.meta.env.DEV
   ? `http://${window.location.hostname}:8000/`
-  : 'https://api.tourister.com/'
+  : `http://${window.location.hostname}:8000/` // : 'https://api.tourister.com/'
+  
 
 const instance = axios.create({
   baseURL,
