@@ -7,10 +7,11 @@ using Reservation.Core.Events;
 namespace Reservation.Core.Consumers;
 
 using Reservation.Core.Model;
+using Reservation.Core.Services;
 
 public sealed class AcceptReservation(
     ReservationContext context,
-    //Notifications notifications,
+    NotificationService notifications,
     ILogger<AcceptReservation> logger
 ) : IConsumer<ReservationAccepted>
 {
@@ -43,6 +44,6 @@ public sealed class AcceptReservation(
         logger.LogInformation("Rejected {Count} overlapping reservations for accepted reservation {ReservationId}",
                                result.ModifiedCount, reservation.Id);
 
-        //await notifications.Send(@event, reservation);
+        await notifications.Send(@event, reservation);
     }
 }
