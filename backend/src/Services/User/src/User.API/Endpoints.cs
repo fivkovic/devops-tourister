@@ -1,4 +1,5 @@
 ﻿using Mediator;
+using Microsoft.AspNetCore.Authentication;
 using Shared.Security;
 using System.Security.Claims;
 using User.Core.Commands;
@@ -21,6 +22,11 @@ public static class Endpoints
               .ProducesValidationProblem()
               .ProducesProblem(StatusCodes.Status400BadRequest)
               .Produces<UserProfile>();
+
+        routes.MapDelete("/users", Delete)
+              .RequireAuthorization()
+              .ProducesProblem(StatusCodes.Status400BadRequest)
+              .Produces(StatusCodes.Status200OK);
 
         routes.MapGet("/users/{id:guid}/reviews", GetReviews)
               .ProducesProblem(StatusCodes.Status400BadRequest)
@@ -59,6 +65,19 @@ public static class Endpoints
 
         var result = await mediator.Send(command);
         if (result.IsSuccess) return Results.Ok(result);
+
+        var error = result.Errors.First();
+        return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);
+    }
+
+    private static async Task<IResult> Delete(ClaimsPrincipal user, HttpContext context, IMediator mediator)
+    {
+        var accessToken = await context.GetTokenAsync("access_token") ?? string.Empty;
+
+        var command = new DeleteUser.Command(user.Id(), accessToken);
+        var result = await mediator.Send(command);
+
+        if (result.IsSuccess) return Results.Ok();
 
         var error = result.Errors.First();
         return Results.Problem(error.Message, statusCode: StatusCodes.Status400BadRequest);

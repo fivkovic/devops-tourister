@@ -9,10 +9,14 @@ internal sealed record UserRegistered(
     string Residence
 );
 
-public record UserUpdated(
+public sealed record UserUpdated(
     Guid UserId,
     string FirstName,
     string LastName,
     string Role,
     string Residence
+);
+
+public sealed record UserDeleted(
+    Guid UserId
 );

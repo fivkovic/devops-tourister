@@ -8,6 +8,7 @@ using Shared.Swagger;
 using User.API;
 using User.Core.Consumers;
 using User.Core.Database;
+using User.Core.Services;
 
 [assembly: MediatorOptions(Namespace = "User.API", ServiceLifetime = ServiceLifetime.Scoped)]
 
@@ -22,7 +23,6 @@ builder.Services.AddSingleton(o =>
                            builder.Configuration.GetConnectionString("MongoDB");
 
     var client = new MongoClient(connectionString);
-
     return new UserContext(client, database: "user");
 });
 
@@ -41,6 +41,14 @@ builder.Services.AddMassTransit(config =>
         cfg.Host(new Uri(connectionString!));
         cfg.ConfigureEndpoints(context);
     });
+});
+
+
+builder.Services.AddHttpClient<ReservationsService>(service =>
+{
+    var url = Environment.GetEnvironmentVariable("RESERVATIONS_SERVICE_URL") ??
+              builder.Configuration.GetConnectionString("ReservationsService");
+    service.BaseAddress = new Uri(url!);
 });
 
 builder.Services.AddAuthorization();

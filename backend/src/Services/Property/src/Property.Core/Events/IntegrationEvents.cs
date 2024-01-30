@@ -17,6 +17,10 @@ public sealed record UserUpdated(
     string Role
 );
 
+public sealed record UserDeleted(
+    Guid UserId
+);
+
 public sealed record ReservationRequested(
     Reservation Reservation
 );
