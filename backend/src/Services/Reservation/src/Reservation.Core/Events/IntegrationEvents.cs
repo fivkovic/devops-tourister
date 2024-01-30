@@ -25,3 +25,18 @@ public record ReservationRejected(
 public record ReservationCancelled(
     Guid ReservationId
 );
+
+public record HostReviewed(
+    Guid CustomerId,
+    Guid OwnerId,
+    int Rating,
+    string Content,
+    DateTimeOffset Timestamp
+);
+
+public record PropertyReviewed(
+    Guid ReservationId,
+    int Rating,
+    string Content,
+    DateTimeOffset Timestamp
+);
