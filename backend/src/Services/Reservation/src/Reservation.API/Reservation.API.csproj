@@ -23,6 +23,11 @@
     </PackageReference>
     <PackageReference Include="MicroElements.Swashbuckle.FluentValidation" />
     <PackageReference Include="Swashbuckle.AspNetCore" />
+    <PackageReference Include="MongoDB.Driver.Core.Extensions.DiagnosticSources" />
+    <PackageReference Include="OpenTelemetry" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" />
   </ItemGroup>
 
   <ItemGroup>

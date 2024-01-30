@@ -1,8 +1,12 @@
 using FluentValidation;
 using MassTransit;
+using MassTransit.Logging;
 using Mediator;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Extensions.DiagnosticSources;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Shared.Security;
 using Shared.Swagger;
 using User.API;
@@ -17,12 +21,16 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors();
 builder.Services.AddMediator();
 
-builder.Services.AddSingleton(o =>
+builder.Services.AddSingleton<UserContext>(o =>
 {
     var connectionString = Environment.GetEnvironmentVariable("MONGODB_CONNECTION") ??
                            builder.Configuration.GetConnectionString("MongoDB");
 
-    var client = new MongoClient(connectionString);
+    var clientSettings = MongoClientSettings.FromConnectionString(connectionString);
+    var options = new InstrumentationOptions { CaptureCommandText = true };
+    clientSettings.ClusterConfigurator = cb => cb.Subscribe(new DiagnosticsActivityEventSubscriber(options));
+
+    var client = new MongoClient(clientSettings);
     return new UserContext(client, database: "user");
 });
 
@@ -61,6 +69,23 @@ builder.Services.AddSwagger("User.API");
 // Add FluentValidation to Swagger
 builder.Services.AddValidatorsFromAssemblyContaining<UserContext>();
 builder.Services.AddFluentValidationRulesToSwagger();
+
+builder.Services
+    .AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("User.API"))
+    .WithTracing(config => config
+        .SetSampler(new AlwaysOnSampler())
+        .AddSource(DiagnosticHeaders.DefaultListenerName)
+        .AddSource("MongoDB.Driver.Core.Extensions.DiagnosticSources")
+        .AddAspNetCoreInstrumentation()
+        .AddOtlpExporter(c =>
+        {
+            var endpoint = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT") ??
+                           builder.Configuration.GetConnectionString("OTLPExporter");
+
+            c.Endpoint = new Uri(endpoint!);
+        })
+    );
 
 var app = builder.Build();
 
