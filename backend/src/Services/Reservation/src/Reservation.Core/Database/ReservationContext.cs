@@ -9,6 +9,7 @@ public class ReservationContext
     public IMongoClient Client { get; }
     public IMongoCollection<Reservation> Reservations { get; }
     public IMongoCollection<User> Users { get; }
+    public IMongoCollection<Notification> Notifications { get; }
 
     public ReservationContext(IMongoClient client, string databaseName)
     {
@@ -16,5 +17,6 @@ public class ReservationContext
         var database = client.GetDatabase(databaseName);
         Reservations = database.GetCollection<Reservation>(nameof(Reservation));
         Users = database.GetCollection<User>(nameof(User));
+        Notifications = database.GetCollection<Notification>(nameof(Notification));
     }
 }

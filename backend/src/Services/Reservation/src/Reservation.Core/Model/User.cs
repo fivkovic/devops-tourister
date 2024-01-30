@@ -9,4 +9,7 @@ public sealed class User
     public string FullName => $"{FirstName} {LastName}";
     public string Role { get; set; }
     public int ReservationsCancelled { get; set; }
+    public Subscription Subscription { get; set; }
+
+    public bool IsSubscribed(Subscription subscription) => Subscription.HasFlag(subscription);
 }
