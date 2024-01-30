@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using Reservation.Core.Database;
 using Reservation.Core.Events;
+using Reservation.Core.Services;
 
 using ValidationResult = FluentValidation.Results.ValidationResult;
 
@@ -42,7 +43,7 @@ public static class AddReview
     public class Handler(
         ReservationContext context,
         IPublishEndpoint eventBus,
-        //Notifications notifications,
+        NotificationService notifications,
         ILogger<Handler> logger
     ) : ICommandHandler<Command, Result>
     {
@@ -76,7 +77,7 @@ public static class AddReview
             await session.CommitTransactionAsync(cancellationToken);
             logger.LogInformation("{Type} {Id} reviewed by {UserId}", command.Type, command.Id, command.UserId);
 
-            //await notifications.Send(@event, reservation, cancellationToken);
+            await notifications.Send(@event, reservation, cancellationToken);
 
             return Result.Ok();
         }
@@ -85,19 +86,19 @@ public static class AddReview
         {
             var isProperty = command.Type == "PROPERTY";
             return isProperty
-                ? new PropertyReviewed(
-                    reservation.Id,
-                    command.Rating,
-                    command.Content,
-                    DateTimeOffset.UtcNow
-                )
-                : new HostReviewed(
-                    reservation.Customer.Id,
-                    reservation.Property.OwnerId,
-                    command.Rating,
-                    command.Content,
-                    DateTimeOffset.UtcNow
-                );
+            ? new PropertyReviewed(
+                reservation.Id,
+                command.Rating,
+                command.Content,
+                DateTimeOffset.UtcNow
+            )
+            : new HostReviewed(
+                reservation.Customer.Id,
+                reservation.Property.OwnerId,
+                command.Rating,
+                command.Content,
+                DateTimeOffset.UtcNow
+            );
         }
     }
 }

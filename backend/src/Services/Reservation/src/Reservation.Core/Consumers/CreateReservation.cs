@@ -2,12 +2,13 @@
 using Microsoft.Extensions.Logging;
 using Reservation.Core.Database;
 using Reservation.Core.Events;
+using Reservation.Core.Services;
 
 namespace Reservation.Core.Consumers;
 
 public sealed class CreateReservation(
     ReservationContext context,
-    //Notifications notifications,
+    NotificationService notifications,
     ILogger<CreateReservation> logger) : IConsumer<ReservationRequested>
 {
     public async Task Consume(ConsumeContext<ReservationRequested> consumer)
@@ -26,6 +27,6 @@ public sealed class CreateReservation(
                                    reservation.Id, reservation.Customer.Id);
         }
 
-        //await notifications.Send(consumer.Message, reservation);
+        await notifications.Send(consumer.Message, reservation);
     }
 }

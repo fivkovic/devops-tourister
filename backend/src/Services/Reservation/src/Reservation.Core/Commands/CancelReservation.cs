@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using Reservation.Core.Database;
 using Reservation.Core.Events;
+using Reservation.Core.Services;
 
 namespace Reservation.Core.Commands;
 
@@ -20,7 +21,7 @@ public static class CancelReservation
     public class Handler(
         ReservationContext context,
         IPublishEndpoint eventBus,
-        //Notifications notifications,
+        NotificationService notifications,
         ILogger<Handler> logger
     ) : ICommandHandler<Command, Result<Reservation>>
     {
@@ -67,7 +68,7 @@ public static class CancelReservation
             logger.LogInformation("Reservation {ReservationId} cancelled by user {UserId}",
                                    command.ReservationId, command.UserId);
 
-            //await notifications.Send(@event, reservation, cancellationToken);
+            await notifications.Send(@event, reservation, cancellationToken);
 
             return reservation;
         }
