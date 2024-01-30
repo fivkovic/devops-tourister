@@ -34,13 +34,15 @@ public sealed class Property
 
     public void Rate(int rating)
     {
-        AverageRating = (NumberOfReviews * AverageRating + rating) / (NumberOfReviews + 1);
+        var newRating = (NumberOfReviews * AverageRating + rating) / (NumberOfReviews + 1);
+        AverageRating = Math.Clamp(double.IsNaN(newRating) ? 0 : newRating, 0, 5);
         NumberOfReviews++;
     }
 
     public void RemoveRating(int rating)
     {
-        AverageRating = (NumberOfReviews * AverageRating - rating) / (NumberOfReviews - 1);
+        var newRating = (NumberOfReviews * AverageRating - rating) / (NumberOfReviews - 1);
+        AverageRating = Math.Clamp(double.IsNaN(newRating) ? 0 : newRating, 0, 5);
         NumberOfReviews--;
     }
 }
