@@ -70,6 +70,17 @@
           "OpenTelemetry.Api.ProviderBuilderExtensions": "1.7.0"
         }
       },
+      "OpenTelemetry.Exporter.Console": {
+        "type": "Direct",
+        "requested": "[1.7.0, )",
+        "resolved": "1.7.0",
+        "contentHash": "9mcwpArzG7+5cLnG6marWdVD1TyoVR03WAjShvxADqgsEeuzLMClTlgXi41bTCAgxjYyiHV5l60fJwXTekiJdQ==",
+        "dependencies": {
+          "OpenTelemetry": "1.7.0",
+          "System.Text.Encodings.Web": "4.7.2",
+          "System.Text.Json": "4.7.2"
+        }
+      },
       "OpenTelemetry.Exporter.OpenTelemetryProtocol": {
         "type": "Direct",
         "requested": "[1.7.0, )",
@@ -79,6 +90,15 @@
           "Google.Protobuf": "[3.22.5, 4.0.0)",
           "Grpc.Net.Client": "[2.52.0, 3.0.0)",
           "OpenTelemetry": "1.7.0"
+        }
+      },
+      "OpenTelemetry.Exporter.Prometheus.AspNetCore": {
+        "type": "Direct",
+        "requested": "[1.7.0-rc.1, )",
+        "resolved": "1.7.0-rc.1",
+        "contentHash": "tlA8oDOZoyFAkKA5StEPdzCyFf/6N/8y0Ymjae1dJYEfxPmNrcrtEHxuxtd0h5GwrIKnVpkb/hJMopHOErnSqQ==",
+        "dependencies": {
+          "OpenTelemetry": "1.7.0-rc.1"
         }
       },
       "OpenTelemetry.Extensions.Hosting": {
@@ -98,6 +118,16 @@
         "resolved": "1.7.0",
         "contentHash": "K/mjCmuR9zgrL6fMC6sbnX/y6BOJJFI3hp42O+tz8nT/w6sxbfjrLcU+fVwfct3lsnohSKdPfrq6fSrxAF5ezw==",
         "dependencies": {
+          "OpenTelemetry.Api.ProviderBuilderExtensions": "1.7.0"
+        }
+      },
+      "OpenTelemetry.Instrumentation.Http": {
+        "type": "Direct",
+        "requested": "[1.7.0, )",
+        "resolved": "1.7.0",
+        "contentHash": "0pM1EHx/85DsUmtffysYNVZBNkenuYd++ZMgNB0oGLdhIK5EJEmz8+Yi+sjHajU5XvAUtOXPL6Ocd3dZWRQIAw==",
+        "dependencies": {
+          "Microsoft.Extensions.Options": "8.0.0",
           "OpenTelemetry.Api.ProviderBuilderExtensions": "1.7.0"
         }
       },
