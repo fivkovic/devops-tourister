@@ -1,0 +1,16 @@
+apiVersion: 1
+
+# https://github.com/grafana/grafana/issues/10786#issuecomment-1277000930
+# https://community.grafana.com/t/grafana-as-code-provisioned-dashboard-do-not-recognize-datasource/83694/3
+# https://grafana.com/docs/grafana/latest/administration/provisioning/
+
+datasources:
+  - uid: PDS001
+    name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true
+    jsonData:
+      maxLines: 1000

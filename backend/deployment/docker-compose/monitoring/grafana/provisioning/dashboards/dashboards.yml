@@ -1,0 +1,42 @@
+apiVersion: 1
+
+providers:
+  - name: Node Exporter
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path:  /var/lib/grafana/dashboards/node-exporter
+
+  - name: ASP.NET Core
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path:  /var/lib/grafana/dashboards/asp-net-core
+
+  - name: ASP.NET Core - Endpoint
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path:  /var/lib/grafana/dashboards/asp-net-core-endpoint
+
+  - name: Node Exporter Full (Custom)
+    type: file    
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path:  /var/lib/grafana/dashboards/node-exporter-full
+      
+  - name: Docker and system monitoring
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path:  /var/lib/grafana/dashboards/docker-and-system-monitoring
