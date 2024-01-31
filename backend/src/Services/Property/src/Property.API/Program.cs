@@ -4,6 +4,7 @@ using MassTransit.Logging;
 using Mediator;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Property.API;
@@ -80,6 +81,7 @@ builder.Services
         .SetSampler(new AlwaysOnSampler())
         .AddSource(DiagnosticHeaders.DefaultListenerName)
         .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation(o =>
         {
             o.EnrichWithIDbCommand = (activity, command) =>
@@ -91,10 +93,26 @@ builder.Services
         {
             var endpoint = Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT") ??
                            builder.Configuration.GetConnectionString("OTLPExporter");
-            
+
             c.Endpoint = new Uri(endpoint!);
-        })
-    );
+        }))
+    .WithMetrics(config =>
+    {
+        config.AddPrometheusExporter()
+              .AddMeter("Microsoft.AspNetCore.Hosting")
+              .AddMeter("Microsoft.AspNetCore.Routing")
+              .AddMeter("Microsoft.AspNetCore.Diagnostics")
+              .AddMeter("Microsoft.AspNetCore.RateLimiting")
+              .AddMeter("Microsoft.AspNetCore.HeaderParsing")
+              .AddMeter("Microsoft.AspNetCore.Server.Kestrel")
+              .AddMeter("Microsoft.AspNetCore.Http.Connections")
+              .AddView(
+                    instrumentName: "http.server.request.duration",
+                    metricStreamConfiguration: new ExplicitBucketHistogramConfiguration
+                    {
+                        Boundaries = [0, 0.005, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5, 0.75, 1, 2.5, 5, 7.5, 10]
+                    });
+    });
 
 var app = builder.Build();
 
@@ -114,6 +132,10 @@ using (var scope = app.Services.CreateScope())
     if (pendingMigrations.Any()) await context.Database.MigrateAsync();
 }
 
+app.MapPrometheusScrapingEndpoint();
+
 Endpoints.Map(app);
 
 app.Run();
+
+public partial class Program { }
