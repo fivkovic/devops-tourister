@@ -1,5 +1,5 @@
 version: "3.8"
-name: "tourister"
+name: "tourister-prod"
 
 services:
 
@@ -18,7 +18,7 @@ services:
           - "-c"
           - "max_prepared_transactions=10"
         healthcheck:
-          test: pg_isready -U postgres
+          test: pg_isready -U ${POSTGRES_USER-}
         ports:
           - "5432:5432"
         volumes:
@@ -87,7 +87,8 @@ services:
         networks:
           - tourister-network
         volumes:
-          - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+          - ./monitoring/prometheus:/etc/prometheus
+          - prometheus:/var/lib/prometheus
 
     grafana:
         image: grafana/grafana:10.3.1
@@ -95,10 +96,25 @@ services:
         restart: unless-stopped
         ports:
           - "3000:3000"
+        environment:
+          GF_RENDERING_SERVER_URL: http://grafana-renderer:8081/render
+          GF_RENDERING_CALLBACK_URL: http://grafana:3000/
+          GF_LOG_FILTERS: rendering:debug
         networks:
           - tourister-network
         volumes:
-          - ./monitoring/grafana-data/data:/var/lib/grafana
+          - grafana:/var/lib/grafana
+          - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+          - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    
+    grafana-renderer:
+      image: grafana/grafana-image-renderer:3.9.1
+      environment:
+        ENABLE_METRICS: "true"
+      ports:
+        - 8081
+      networks:
+        - tourister-network
 
     node_exporter:
         image: quay.io/prometheus/node-exporter:v1.7.0
@@ -107,6 +123,8 @@ services:
         command:
           - '--path.rootfs=/host'
         pid: host
+        ports:
+          - "9100:9100"
         networks:
           - tourister-network
         volumes:
@@ -244,13 +262,15 @@ services:
           dockerfile: Dockerfile.prod
         container_name: ui
         ports:
-          - "8888:80"
+          - "3030:80"
 
 volumes:
   postgres:
   mongo_data:
   mongo_config:
   jaeger_data:
+  grafana:
+  prometheus:
   images:
     driver: local
 
