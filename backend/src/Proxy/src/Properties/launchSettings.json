@@ -1,0 +1,24 @@
+{
+  "profiles": {
+    "Docker (Debug)": {
+      "commandName": "Docker",
+      "launchBrowser": false,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_HTTP_PORT": "80"
+      },
+      "publishAllPorts": false,
+      "useSSL": false,
+      "httpPort": 8000
+    }
+  },
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:33187",
+      "sslPort": 0
+    }
+  }
+}

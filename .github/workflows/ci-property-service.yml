@@ -1,0 +1,113 @@
+name: CI Workflow - Property Service
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ['main', 'dev']
+    paths:
+      - backend/src/Services/Property/**
+      - .github/workflows/ci-property-service.yml
+
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: ['main', 'dev']
+    paths:
+      - backend/src/Services/Property/**
+      - .github/workflows/ci-property-service.yml
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.sha }}
+  cancel-in-progress: true
+
+env:
+  PROPERTY_SERVICE_NAME: 'Property'
+  PROPERTY_SERVICE_IMAGE_NAME: 'property-api'
+  SOLUTION_PATH: 'backend/src'
+  PROJECT_PATH: 'backend/src/Services/Property/src/Property.API'
+  TESTS_PATH: 'backend/src/Services/Property/tests/'
+  DOCKERFILE_PATH_DEV: '${{ github.workspace }}/backend/src/Services/Property/Dockerfile.dev'
+  DOCKERFILE_PATH_PROD: '${{ github.workspace }}/backend/src/Services/Property/Dockerfile.prod'
+  DOCKER_BUILD_CONTEXT: '${{ github.workspace }}/backend'
+  REGISTRY_REPOSITORY: 'tourister'
+
+jobs:
+  build-test-analyze:
+    name: 🏗️ Build, Test, Run Code Analysis
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+      DOTNET_NOLOGO: true
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🏗️ Build using composite action
+        uses: ./.github/actions/build
+        if: success()
+        with:
+          service-name: ${{ env.PROPERTY_SERVICE_NAME }}
+          project-path: ${{ env.PROJECT_PATH }}
+          solution-path: ${{ env.SOLUTION_PATH }}
+
+      - name: 🧪 Run tests using composite action
+        uses: ./.github/actions/test
+        if: success()
+        with:
+          service-name: ${{ env.PROPERTY_SERVICE_NAME }}
+          tests-path: ${{ env.TESTS_PATH }}
+          reports-path: ${{ github.workspace }}/**/*.cobertura.xml
+          reports-output-path: ${{ github.workspace }}/output/test-results
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🚥 Run SonarCloud code analysis using composite action
+        uses: ./.github/actions/run-code-analysis
+        if: success()
+        with:
+          project-path: ${{ env.PROJECT_PATH }}
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+          sonar-token: ${{ secrets.SONAR_TOKEN_PROPERTY_SERVICE }}
+          sonar-organization-key: ${{ vars.SONAR_ORGANIZATION_KEY }}
+          sonar-project-key: ${{ vars.SONAR_PROJECT_KEY_PROPERTY_SERVICE }}
+          sonar-project-name: ${{ vars.SONAR_PROJECT_NAME_PROPERTY_SERVICE }}
+          is-test-runner: ${{ vars.IS_TEST_RUNNER }}
+
+  pre-release:
+    name: 📦 Create development release
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/dev' && github.event_name != 'pull_request' && success() }}
+    needs: build-test-analyze
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Create development release
+        uses: ./.github/actions/pre-release
+        with:
+          image-name: ${{ env.PROPERTY_SERVICE_IMAGE_NAME }}
+          dockerfile-path: ${{ env.DOCKERFILE_PATH_DEV }}
+          docker-build-context: ${{ env.DOCKER_BUILD_CONTEXT }}
+          registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          registry-password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          registry-repository: ${{ env.REGISTRY_REPOSITORY }}
+          gh-token: ${{ secrets.GITHUB_TOKEN }}
+
+  release:
+    name: 📦 Create stable release
+    runs-on: ubuntu-latest
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && success() }}
+    needs: build-test-analyze
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Create Property Service Stable Release
+        uses: ./.github/actions/release
+        with:
+          image-name: ${{ env.PROPERTY_SERVICE_IMAGE_NAME }}
+          dockerfile-path: ${{ env.DOCKERFILE_PATH_PROD }}
+          docker-build-context: ${{ env.DOCKER_BUILD_CONTEXT }}
+          registry-username: ${{ secrets.DOCKERHUB_USERNAME }}
+          registry-password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          registry-repository: ${{ env.REGISTRY_REPOSITORY }}
+          gh-token: ${{ secrets.GITHUB_TOKEN }}

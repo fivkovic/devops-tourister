@@ -1,0 +1,349 @@
+version: "3.8"
+name: "tourister-prod"
+
+x-logging: &fluent-bit
+  driver: fluentd
+  options:
+    fluentd-address: ${FLUENT_BIT_ADDRESS}:24224
+
+services:
+
+    postgres:
+        image: postgres:15.4-alpine
+        container_name: postgres
+        restart: unless-stopped
+        environment:
+          - POSTGRES_USER=${POSTGRES_USER-}
+          - POSTGRES_PASSWORD=${POSTGRES_PASSWORD-}
+          - POSTGRES_EXTENSIONS=pg_trgm
+        command:
+          - "postgres"
+          - "-c"
+          - "wal_level=logical"
+          - "-c"
+          - "max_prepared_transactions=10"
+        healthcheck:
+          test: pg_isready -U ${POSTGRES_USER-}
+        ports:
+          - "5432:5432"
+        volumes:
+          - postgres:/var/lib/postgresql/data
+        networks:
+          - tourister-network
+
+    mongo:
+        image: mongo:7.0.5 
+        container_name: mongo
+        restart: unless-stopped
+        command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+        healthcheck:
+          test: echo "try { rs.status() } 
+                catch (err) { 
+                  rs.initiate({_id:'rs0',members:[{_id:0,host:'host.docker.internal:27017'}]}) 
+                }" | mongosh --port 27017 --quiet
+        ports:
+          - "27017:27017"
+        networks:
+          - tourister-network
+        volumes:
+          - mongo_data:/data/db
+          - mongo_config:/data/configdb
+
+    rabbitmq:
+        image: rabbitmq:3.12.4-management
+        container_name: rabbitmq
+        restart: unless-stopped
+        healthcheck:
+          test: rabbitmq-diagnostics check_port_connectivity
+        ports:
+          - "5672:5672"
+          - "15672:15672"
+        networks:
+          - tourister-network
+    
+    jaeger:
+        user: root # Required to run as root to access /badger volume.
+        image: jaegertracing/all-in-one:1.53
+        container_name: jaeger
+        restart: unless-stopped
+        environment:
+          - COLLECTOR_OTLP_ENABLED=true
+          - SPAN_STORAGE_TYPE=badger
+          - BADGER_EPHEMERAL=false
+          - BADGER_DIRECTORY_VALUE=/badger/data
+          - BADGER_DIRECTORY_KEY=/badger/key
+        ports:
+          - "16686:16686"
+          - "4317:4317"
+          - "4318:4318"
+        networks:
+          - tourister-network
+        volumes:
+          - jaeger_data:/badger
+
+    prometheus:
+        image: prom/prometheus:v2.49.1
+        container_name: prometheus
+        restart: unless-stopped
+        ports:
+          - "9090:9090"
+        environment:
+          - TZ=UTC
+        networks:
+          - tourister-network
+        volumes:
+          - ./monitoring/prometheus:/etc/prometheus
+          - prometheus:/var/lib/prometheus
+
+    grafana:
+        image: grafana/grafana:10.3.1
+        container_name: grafana
+        restart: unless-stopped
+        ports:
+          - "3000:3000"
+        environment:
+          GF_RENDERING_SERVER_URL: http://grafana-renderer:8081/render
+          GF_RENDERING_CALLBACK_URL: http://grafana:3000/
+          GF_LOG_FILTERS: rendering:debug
+        networks:
+          - tourister-network
+        volumes:
+          - grafana:/var/lib/grafana
+          - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+          - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    
+    grafana-renderer:
+      image: grafana/grafana-image-renderer:3.9.1
+      container_name: grafana-renderer
+      restart: unless-stopped
+      environment:
+        ENABLE_METRICS: "true"
+      ports:
+        - 8081
+      networks:
+        - tourister-network
+
+    node_exporter:
+        image: quay.io/prometheus/node-exporter:v1.7.0
+        container_name: node_exporter
+        restart: unless-stopped
+        command:
+          - '--path.rootfs=/host'
+        pid: host
+        ports:
+          - "9100:9100"
+        networks:
+          - tourister-network
+        volumes:
+          - '/:/host:ro,rslave'
+
+    cadvisor:
+        image: gcr.io/cadvisor/cadvisor:v0.47.2
+        container_name: cadvisor
+        restart: unless-stopped
+        ports:
+          - "8080:8080"
+        networks:
+          - tourister-network
+        volumes:
+          - /:/rootfs:ro
+          - /var/run:/var/run:ro
+          - /sys:/sys:ro
+          - /var/lib/docker/:/var/lib/docker:ro
+          - /dev/disk/:/dev/disk:ro
+        devices:
+          - /dev/kmsg
+
+    # https://stackoverflow.com/questions/64238703/how-to-configure-fluent-bit-fluentd-loki-and-grafana-using-docker-compose
+    # https://grafana.com/docs/loki/latest/send-data/fluentd/
+    fluentd:
+      image: grafana/fluent-plugin-loki:main-8289ca7-amd64
+      container_name: fluentd
+      restart: unless-stopped
+      command:
+        - "fluentd"
+        - "-v"
+        - "-p"
+        - "/fluentd/plugins"
+      environment:
+        LOKI_URL: http://loki:3100
+        LOKI_USERNAME:
+        LOKI_PASSWORD:
+      ports:
+        - "24224:24224"
+      networks:
+        - tourister-network
+      volumes:
+        - host_logs:/var/log
+        # Needed for journald log ingestion:
+        - /etc/machine-id:/etc/machine-id
+        - /dev/log:/dev/log
+        - /var/run/systemd/journal/:/var/run/systemd/journal/      
+        - /var/lib/docker/containers:/fluentd/log/containers
+        - ./monitoring/fluentd/fluent.conf:/fluentd/etc/fluent.conf
+      logging:
+        options:
+          tag: docker.monitoring
+
+    loki:
+      image: grafana/loki:2.9.4
+      container_name: loki
+      restart: unless-stopped
+      expose:
+        - "3100"
+      networks:
+        - tourister-network
+      volumes:
+        - './monitoring/loki/loki.conf:/loki/etc/loki.conf'
+      depends_on:
+        - fluentd
+
+    fluent-bit:
+      image: fluent/fluent-bit:1.9.9
+      container_name: fluent-bit
+      restart: unless-stopped
+      ports:
+        - "2020:2020"
+      networks:
+        - tourister-network
+      volumes:
+        - ./monitoring/fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+        - ./monitoring/fluent-bit/parsers.conf:/fluent-bit/etc/parsers.conf
+        - /var/log/:/var/log/
+        - /var/lib/docker/containers:/fluent-bit/log/containers
+
+    proxy:
+        image: ${DOCKER_REGISTRY-}/proxy:local-prod
+        build:
+          context: ../../
+          dockerfile: src/Proxy/Dockerfile.prod
+        container_name: proxy
+        environment:
+          - OTEL_EXPORTER_OTLP_ENDPOINT=${JAEGER_CONNECTION}
+        ports:
+          - "8000:80"
+        networks:
+          - tourister-network
+        depends_on:
+          jaeger:
+            condition: service_started
+        logging: *fluent-bit
+
+    identity:
+        image: ${DOCKER_REGISTRY-}/identity:local-prod
+        build:
+          context: ../../
+          dockerfile: src/Services/Identity/Dockerfile.prod
+        container_name: identity
+        environment:
+          - PG_CONNECTION=${IDENTITY_PG_CONNECTION}
+          - RABBITMQ_CONNECTION=${RABBITMQ_CONNECTION}
+          - OTEL_EXPORTER_OTLP_ENDPOINT=${JAEGER_CONNECTION}
+        ports:
+          - "8001:80"
+        networks:
+          - tourister-network
+        depends_on: 
+          postgres:
+            condition: service_healthy
+          rabbitmq:
+            condition: service_healthy
+          jaeger:
+            condition: service_started
+        logging: *fluent-bit
+
+    property:
+        user: root                                          # TODO: Re-check and try removing "driver: local" from volume definition.
+        image: ${DOCKER_REGISTRY-}/property:local-prod
+        build:
+          context: ../../
+          dockerfile: src/Services/Property/Dockerfile.prod
+        container_name: property
+        environment:
+          - PG_CONNECTION=${PROPERTY_PG_CONNECTION}
+          - RABBITMQ_CONNECTION=${RABBITMQ_CONNECTION}
+          - OTEL_EXPORTER_OTLP_ENDPOINT=${JAEGER_CONNECTION}
+        ports:
+          - "8006:80"
+        networks:
+          - tourister-network
+        volumes:
+          - images:/app/wwwroot/images
+        depends_on:
+          postgres:
+            condition: service_healthy
+          rabbitmq:
+            condition: service_healthy
+          jaeger:
+            condition: service_started
+        logging: *fluent-bit
+
+    reservation:
+        image: ${DOCKER_REGISTRY-}/reservation:local-prod
+        build:
+          context: ../../
+          dockerfile: src/Services/Reservation/Dockerfile.prod
+        container_name: reservation
+        environment:
+          - MONGODB_CONNECTION=${RESERVATION_MONGODB_CONNECTION}
+          - RABBITMQ_CONNECTION=${RABBITMQ_CONNECTION}
+          - OTEL_EXPORTER_OTLP_ENDPOINT=${JAEGER_CONNECTION}
+        ports:
+          - "8011:80"
+        networks:
+          - tourister-network
+        depends_on:
+          mongo:
+            condition: service_healthy
+          rabbitmq:
+            condition: service_healthy
+          jaeger:
+            condition: service_started
+        logging: *fluent-bit
+
+    user:
+        image: ${DOCKER_REGISTRY-}/user:local-prod
+        build:
+          context: ../../
+          dockerfile: src/Services/User/Dockerfile.prod
+        container_name: user
+        environment:
+          - MONGODB_CONNECTION=${USER_MONGODB_CONNECTION}
+          - RABBITMQ_CONNECTION=${RABBITMQ_CONNECTION}
+          - RESERVATIONS_SERVICE_URL=http://reservation:80
+          - OTEL_EXPORTER_OTLP_ENDPOINT=${JAEGER_CONNECTION}
+        ports:
+          - "8016:80"
+        networks:
+          - tourister-network
+        depends_on:
+          mongo:
+            condition: service_healthy
+          rabbitmq:
+            condition: service_healthy
+          jaeger:
+            condition: service_started
+        logging: *fluent-bit
+
+    ui:
+        image: ${DOCKER_REGISTRY-}/ui:local-prod
+        build:
+          context: ../../../frontend
+          dockerfile: Dockerfile.prod
+        container_name: ui
+        ports:
+          - "3030:80"
+
+volumes:
+  postgres:
+  mongo_data:
+  mongo_config:
+  jaeger_data:
+  grafana:
+  prometheus:
+  images:
+    driver: local
+  host_logs:
+
+networks:
+    tourister-network:

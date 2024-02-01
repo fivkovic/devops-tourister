@@ -1,0 +1,45 @@
+#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+USER app
+WORKDIR /app
+EXPOSE 80
+
+ENV ASPNETCORE_URLS=http://+:80
+ENV ASPNETCORE_ENVIRONMENT=Development
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_CONFIGURATION=Release
+
+WORKDIR /src
+COPY ["src/nuget.config", "."]
+COPY ["src/Directory.Build.props", "."]
+COPY ["src/Directory.Packages.props", "."]
+
+COPY ["src/Shared/Directory.Build.props", "Shared/"]
+COPY ["src/Shared/Shared.csproj", "Shared/"]
+COPY ["src/Shared/packages.lock.json", "Shared/"]
+COPY ["src/Services/Reservation/Directory.Build.props", "Services/Reservation/"]
+COPY ["src/Services/Reservation/src/Reservation.Core/Reservation.Core.csproj", "Services/Reservation/src/Reservation.Core/"]
+COPY ["src/Services/Reservation/src/Reservation.Core/packages.lock.json", "Services/Reservation/src/Reservation.Core/"]
+COPY ["src/Services/Reservation/src/Reservation.API/Reservation.API.csproj", "Services/Reservation/src/Reservation.API/"]
+COPY ["src/Services/Reservation/src/Reservation.API/packages.lock.json", "Services/Reservation/src/Reservation.API/"]
+RUN --mount=type=cache,id=reservation_nuget,target=/root/.nuget/packages \
+    dotnet restore "Services/Reservation/src/Reservation.API/Reservation.API.csproj" --use-lock-file --locked-mode
+
+COPY ["src/Shared/", "Shared/"]
+COPY ["src/Services/Reservation/src/Reservation.Core/", "Services/Reservation/src/Reservation.Core/"]
+COPY ["src/Services/Reservation/src/Reservation.API/", "Services/Reservation/src/Reservation.API/"]
+RUN --mount=type=cache,id=reservation_nuget,target=/root/.nuget/packages \
+    dotnet build "Services/Reservation/src/Reservation.API/Reservation.API.csproj" -c $BUILD_CONFIGURATION --no-restore
+
+FROM build AS publish
+RUN --mount=type=cache,id=reservation_nuget,target=/root/.nuget/packages \
+    dotnet publish "Services/Reservation/src/Reservation.API/Reservation.API.csproj" -c $BUILD_CONFIGURATION --no-build -o /app/publish /p:UseAppHost=false
+WORKDIR /
+RUN rm -rf /root/.nuget /root/.local /root/.nuget/packages/*
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "Reservation.API.dll"]

@@ -1,0 +1,82 @@
+<Project>
+
+  <!-- BEGIN - Build Output settings -->
+  <!-- NOTE: Each child project overrides these settings to preserve folder structure in 'obj' and 'bin' folders. -->
+  <PropertyGroup>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)\..\output\bin\$(MSBuildProjectName)\</BaseOutputPath>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)\..\output\obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <!-- END - Build Output settings -->
+
+  <!-- BEGIN - SDK settings -->
+  <PropertyGroup>
+    <!-- We set "allowPrerelease": true in our 'global.json' file so we don't want to be warned of using a preview version. -->
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+  </PropertyGroup>
+  <!-- END - SDK settings -->
+
+  <!-- BEGIN - Nuget settings -->
+  <PropertyGroup>
+    <!-- Use Directory.Packages.props for nuget package versions. See more at: https://github.com/NuGet/Home/wiki/Centrally-managing-NuGet-packages -->
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!-- Enable deterministic restore. See more at: https://devblogs.microsoft.com/nuget/enable-repeatable-package-restores-using-a-lock-file/ -->
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <!-- Enable faster restore times. See more at: https://learn.microsoft.com/en-us/nuget/reference/msbuild-targets -->
+    <RestoreUseStaticGraphEvaluation>true</RestoreUseStaticGraphEvaluation>
+  </PropertyGroup>
+  <!-- END - Nuget settings -->
+
+  <!-- BEGIN - Compiler settings common for all projects -->
+  <PropertyGroup>
+    <!-- Ensure all projects target the same framework. -->
+    <TargetFramework>net8.0</TargetFramework>
+    <!-- Ensure all projects use the latest language version. -->
+    <LangVersion>latest</LangVersion> 
+    <!-- Turn on nullable-reference-type analysis. -->
+    <Nullable>enable</Nullable>
+    <!-- Turn on implicit usings. -->
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Opt into more advanced analysis. -->
+    <AnalysisLevel>latest</AnalysisLevel> 
+  </PropertyGroup>
+  <!-- END - Compiler settings common for all projects -->
+
+  <!-- BEGIN - SonarQube MSBuild Configuration -->
+  <!-- SOURCE: https://stackoverflow.com/a/48687929/12546426
+      
+      This target customises the SonarQube MSBuild runner targets to limit the projects that are analysed.
+
+      Projects whose full path and file name match the specified filter will be marked as "excluded".
+
+      Note that this targets file does not ever set $(SonarQubeExclude) to "false". This is to allow other
+       targets to exclude projects for other reasons (e.g. a Fakes projects should always be excluded, regardless
+       of whether or not they match the project filter).
+
+      Also, this project will do nothing if $(SonarQubeExclude) has already been set.
+
+      The regular expression uses the normal .NET regular expression syntax.
+
+      Usage:
+       (1) include the target in the projects being built, either by directly importing it or by
+           dropping it in the one of the standard "ImportBefore" folders.
+
+       (2) set $(SQExclusionFilter) to the desired regular expression
+           e.g. the following example matches all projects with "CodeSense\Services" in the path:  .*\\CodeSense\\Services\\.*
+  -->
+  <PropertyGroup Condition=" $(SonarQubeExclude) == '' AND $(SQExclusionFilter) != '' ">
+    <MatchesSQExclusionFilter Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($(MSBuildProjectFullPath), $(SQExclusionFilter), System.Text.RegularExpressions.RegexOptions.IgnoreCase)) ">true</MatchesSQExclusionFilter>
+    <SonarQubeExclude Condition="$(MatchesSQExclusionFilter) == 'true' " >true</SonarQubeExclude>
+  </PropertyGroup>
+
+  <!-- This target is not required: it simply writes out additional information to simplify debugging -->
+  <Target Name="AnalysisProjectInfoExclude_DEBUG" BeforeTargets="CoreCompile" Condition="$(SQExclusionFilter) != '' ">
+    <Message Importance="high" Text="ExclusionFilter: filter has been set.  Filter= $(SQExclusionFilter)" />
+    <Message Importance="high" Text="ExclusionFilter: current project = $(MSBuildProjectFullPath)" />
+    <Message Importance="high" Text="ExclusionFilter: match result = $(MatchesSQExclusionFilter)" />
+    <Message Importance="high" Condition="$(MatchesSQExclusionFilter) == 'true' " Text="ExclusionFilter: project is excluded" />
+    <Message Importance="high" Condition="$(MatchesSQExclusionFilter) != 'true' " Text="ExclusionFilter: project has not been excluded by the exclusion filter" />
+  </Target>
+
+  <!-- END - SonarQube MSBuild Configuration -->
+
+</Project>

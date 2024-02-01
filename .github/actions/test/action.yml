@@ -1,0 +1,56 @@
+﻿name: '🧪 Test .NET project'
+description: 'Test .NET project'
+
+inputs:
+  service-name:
+    description: Service name (used only for logging purposes)
+    required: true
+  tests-path:
+    description: Test path
+    required: true
+  reports-path:
+    description: Test reports path
+    required: true
+  reports-output-path:
+    description: Test reports output path
+    required: true
+  gh-token:
+    description: Github Personal Access Token
+    required: true
+  no-restore:
+    description: Disable restoring of NuGet packages for building tests (tests aren't built in the 'build' composite action)
+    required: false
+    default: 'true'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 👀 Test Info
+      shell: bash
+      run: echo "Testing service ${{ inputs.service-name }} on tests path ${{ inputs.tests-path }}"
+
+    - name: 🧪 Run Tests
+      shell: bash
+      working-directory: ${{ inputs.tests-path }}
+      run: |
+        for file in $(find . -name "*.csproj" -type f); do
+          echo "Running tests for $file"
+          if [ ${{ inputs.no-restore }} == 'true' ]; then
+             echo "  running tests without NuGet package restoration"
+             dotnet test "$file" -c Release --no-restore --logger "trx;LogFileName=test-results.trx" || true
+          else
+             echo "  restoring NuGet packages and running tests"
+             dotnet test "$file" -c Release --logger "trx;LogFileName=test-results.trx" || true
+          fi
+        done
+
+    - name: 📜 Generate Test Results and Reports
+      uses: phoenix-actions/test-reporting@v10
+      if: always()
+      with:
+        name: ${{ inputs.service-name }} Test Reports
+        reporter: dotnet-trx
+        token: ${{ inputs.gh-token }}
+        output-to: 'step-summary'
+        path: '**/test-results.trx'
+        fail-on-error: true

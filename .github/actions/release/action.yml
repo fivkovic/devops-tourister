@@ -1,0 +1,83 @@
+﻿name: 'Release'
+description: 'Bump appropriate version, create tag and GitHub release, Build and publish Docker image (Release)'
+
+inputs:
+  image-name:
+    description: 'Image name (e.g. "identity-api")'
+    required: true
+  dockerfile-path:
+    description: 'Dockerfile path (relative to repository root, e.g. "backend/src/Services/Identity/Dockerfile.prod")'
+    required: true
+  docker-build-context:
+    description: 'Docker build context (relative to repository root, e.g. "backend/")'
+    required: true
+  registry-username:
+    description: 'Container registry username (e.g. "fivkovic")'
+    required: true
+  registry-password:
+    description: 'Container registry password'
+    required: true
+  registry-repository:
+    description: 'Container registry repository (e.g. "tourister")'
+    required: true
+  gh-token:
+    description: Github Personal Access Token
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set tag prefix
+      id: set-tag-prefix-step
+      if: ${{ github.ref == 'refs/heads/main' }}
+      shell: bash
+      run: echo "tag_prefix=${{ inputs.image-name }}-v" >> $GITHUB_OUTPUT
+
+    - name: Bump version and create tag
+      id: tag-step
+      if: ${{ github.ref == 'refs/heads/main' && success() }}
+      uses: mathieudutour/github-tag-action@v6.1
+      with:
+        github_token: ${{ inputs.gh-token }}
+        release_branches: main
+        pre_release_branches: dev
+        tag_prefix: ${{ steps.set-tag-prefix-step.outputs.tag_prefix }}
+
+    - name: Create a GitHub Release
+      if: ${{ github.ref == 'refs/heads/main' && success() }}
+      uses: ncipollo/release-action@v1
+      with:
+        token: ${{ inputs.gh-token }}
+        tag: ${{ steps.tag-step.outputs.new_tag }}
+        name: Release ${{ steps.tag-step.outputs.new_tag }}
+        body: ${{ steps.tag-step.outputs.changelog }}
+        prerelease: false
+
+    - name: Prepare Docker build variables
+      id: prepare-docker-vars-step
+      if: ${{ github.ref == 'refs/heads/main' && success() }}
+      shell: bash
+      run: |
+        DOCKER_TAG="${{ inputs.registry-username }}/${{ inputs.registry-repository }}:${{ steps.tag-step.outputs.new_tag }}"
+        DOCKER_TAG_LATEST="${{ inputs.registry-username }}/${{ inputs.registry-repository }}:${{ inputs.image-name }}-latest"
+        echo "docker_tag=$DOCKER_TAG" >> $GITHUB_OUTPUT
+        echo "docker_tag_latest=$DOCKER_TAG_LATEST" >> $GITHUB_OUTPUT
+
+    - name: Log in to Container Registry (Docker Hub)
+      uses: docker/login-action@v3
+      if: ${{ github.ref == 'refs/heads/main' && success() }}
+      with:
+        username: ${{ inputs.registry-username }}
+        password: ${{ inputs.registry-password }}
+
+    - name: Build Docker image
+      if: ${{ github.ref == 'refs/heads/main' && success() }}
+      shell: bash
+      run: docker build -t ${{ steps.prepare-docker-vars-step.outputs.docker_tag }} -t ${{ steps.prepare-docker-vars-step.outputs.docker_tag_latest }} -f ${{ inputs.dockerfile-path }} ${{ inputs.docker-build-context }}
+
+    - name: Push Docker image to Container Registry (Docker Hub)
+      if: ${{ github.ref == 'refs/heads/main' && success() }}
+      shell: bash
+      run: |
+        docker push ${{ steps.prepare-docker-vars-step.outputs.docker_tag }}
+        docker push ${{ steps.prepare-docker-vars-step.outputs.docker_tag_latest }}
