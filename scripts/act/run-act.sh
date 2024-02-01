@@ -28,8 +28,9 @@ echo "1. ci-identity-service"
 echo "2. ci-property-service"
 echo "3. ci-reservation-service"
 echo "4. ci-user-service"
-echo "5. ci-ui"
-echo "6. Execute all workflows"
+echo "5. ci-proxy"
+echo "6. ci-ui"
+echo "7. Execute all workflows"
 
 read -p "Enter the number of the workflow you want to execute: " choice
 
@@ -38,12 +39,13 @@ case $choice in
     2) run_act_workflow "ci-property-service" ;;
     3) run_act_workflow "ci-reservation-service" ;;
     4) run_act_workflow "ci-user-service" ;;
-    5) run_act_workflow "ci-ui" ;;
-    6)
+    5) run_act_workflow "ci-proxy" ;;
+    6) run_act_workflow "ci-ui" ;;
+    7)
         echo "Executing all workflows"
         act workflow_dispatch -r --secret-file ./scripts/act/.secrets --env-file ./scripts/act/.env --var-file ./scripts/act/.vars
         ;;
     *)
-        echo "Invalid choice. Please enter a valid number (1-6)."
+        echo "Invalid choice. Please enter a valid number (1-7)."
         ;;
 esac
