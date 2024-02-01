@@ -1,6 +1,11 @@
 version: "3.8"
 name: "tourister-prod"
 
+x-logging: &fluent-bit
+  driver: fluentd
+  options:
+    fluentd-address: ${FLUENT_BIT_ADDRESS}:24224
+
 services:
 
     postgres:
@@ -109,6 +114,8 @@ services:
     
     grafana-renderer:
       image: grafana/grafana-image-renderer:3.9.1
+      container_name: grafana-renderer
+      restart: unless-stopped
       environment:
         ENABLE_METRICS: "true"
       ports:
@@ -147,6 +154,64 @@ services:
         devices:
           - /dev/kmsg
 
+    # https://stackoverflow.com/questions/64238703/how-to-configure-fluent-bit-fluentd-loki-and-grafana-using-docker-compose
+    # https://grafana.com/docs/loki/latest/send-data/fluentd/
+    fluentd:
+      image: grafana/fluent-plugin-loki:main-8289ca7-amd64
+      container_name: fluentd
+      restart: unless-stopped
+      command:
+        - "fluentd"
+        - "-v"
+        - "-p"
+        - "/fluentd/plugins"
+      environment:
+        LOKI_URL: http://loki:3100
+        LOKI_USERNAME:
+        LOKI_PASSWORD:
+      ports:
+        - "24224:24224"
+      networks:
+        - tourister-network
+      volumes:
+        - host_logs:/var/log
+        # Needed for journald log ingestion:
+        - /etc/machine-id:/etc/machine-id
+        - /dev/log:/dev/log
+        - /var/run/systemd/journal/:/var/run/systemd/journal/      
+        - /var/lib/docker/containers:/fluentd/log/containers
+        - ./monitoring/fluentd/fluent.conf:/fluentd/etc/fluent.conf
+      logging:
+        options:
+          tag: docker.monitoring
+
+    loki:
+      image: grafana/loki:2.9.4
+      container_name: loki
+      restart: unless-stopped
+      expose:
+        - "3100"
+      networks:
+        - tourister-network
+      volumes:
+        - './monitoring/loki/loki.conf:/loki/etc/loki.conf'
+      depends_on:
+        - fluentd
+
+    fluent-bit:
+      image: fluent/fluent-bit:1.9.9
+      container_name: fluent-bit
+      restart: unless-stopped
+      ports:
+        - "2020:2020"
+      networks:
+        - tourister-network
+      volumes:
+        - ./monitoring/fluent-bit/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+        - ./monitoring/fluent-bit/parsers.conf:/fluent-bit/etc/parsers.conf
+        - /var/log/:/var/log/
+        - /var/lib/docker/containers:/fluent-bit/log/containers
+
     proxy:
         image: ${DOCKER_REGISTRY-}/proxy:local-prod
         build:
@@ -162,6 +227,7 @@ services:
         depends_on:
           jaeger:
             condition: service_started
+        logging: *fluent-bit
 
     identity:
         image: ${DOCKER_REGISTRY-}/identity:local-prod
@@ -184,6 +250,7 @@ services:
             condition: service_healthy
           jaeger:
             condition: service_started
+        logging: *fluent-bit
 
     property:
         user: root                                          # TODO: Re-check and try removing "driver: local" from volume definition.
@@ -209,6 +276,7 @@ services:
             condition: service_healthy
           jaeger:
             condition: service_started
+        logging: *fluent-bit
 
     reservation:
         image: ${DOCKER_REGISTRY-}/reservation:local-prod
@@ -231,6 +299,7 @@ services:
             condition: service_healthy
           jaeger:
             condition: service_started
+        logging: *fluent-bit
 
     user:
         image: ${DOCKER_REGISTRY-}/user:local-prod
@@ -254,6 +323,7 @@ services:
             condition: service_healthy
           jaeger:
             condition: service_started
+        logging: *fluent-bit
 
     ui:
         image: ${DOCKER_REGISTRY-}/ui:local-prod
@@ -273,6 +343,7 @@ volumes:
   prometheus:
   images:
     driver: local
+  host_logs:
 
 networks:
     tourister-network:
